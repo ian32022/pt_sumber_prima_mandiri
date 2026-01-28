@@ -6,21 +6,30 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
         Schema::create('part_list', function (Blueprint $table) {
-            $table->id();
+            $table->id('partlist_id');
+            $table->foreignId('permintaan_id')->constrained('permintaan')->onDelete('cascade');
+            $table->foreignId('designer_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->string('kode_part', 50)->unique();
+            $table->string('nama_part', 100);
+            $table->string('material', 50)->nullable();
+            $table->string('dimensi', 100)->nullable();
+            $table->string('dimensi_belanja', 100)->nullable();
+            $table->integer('quantity')->default(1);
+            $table->string('unit', 20)->default('pcs');
+            $table->decimal('berat', 10, 2)->nullable();
+            $table->string('gambar_part', 255)->nullable();
+            $table->enum('status_part', ['draft', 'belum_dibeli', 'dibeli', 'indent', 'ready'])->default('draft');
+            $table->text('catatan')->nullable();
             $table->timestamps();
+            
+            $table->index('kode_part');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('part_list');
     }

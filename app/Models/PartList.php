@@ -14,6 +14,7 @@ class PartList extends Model
 
     protected $fillable = [
         'permintaan_id',
+        'designer_id',
         'kode_part',
         'nama_part',
         'material',
@@ -23,6 +24,7 @@ class PartList extends Model
         'unit',
         'berat',
         'gambar_part',
+        'status_part',
         'catatan'
     ];
 
@@ -37,7 +39,13 @@ class PartList extends Model
         return $this->belongsTo(Permintaan::class, 'permintaan_id');
     }
 
-    // Relationship dengan Proses MFG
+    // Relationship dengan Designer
+    public function designer()
+    {
+        return $this->belongsTo(User::class, 'designer_id');
+    }
+
+    // Relationship dengan ProsesMfg
     public function prosesMfg()
     {
         return $this->hasMany(ProsesMfg::class, 'partlist_id');
@@ -49,22 +57,32 @@ class PartList extends Model
         return $this->hasMany(Schedule::class, 'partlist_id');
     }
 
-    // Total OK quantity dari semua proses
-    public function getTotalOkAttribute()
+    // Status part options
+    public static function getStatusOptions()
     {
-        return $this->prosesMfg->sum('hasil_ok');
+        return [
+            'draft' => 'Draft',
+            'belum_dibeli' => 'Belum Dibeli',
+            'dibeli' => 'Sudah Dibeli',
+            'indent' => 'Indent',
+            'ready' => 'Ready'
+        ];
     }
 
-    // Total NG quantity dari semua proses
-    public function getTotalNgAttribute()
+    // Check if part is ready for machining
+    public function isReadyForMachining()
     {
-        return $this->prosesMfg->sum('hasil_ng');
+        return $this->status_part === 'ready';
     }
 
-    // Yield rate
-    public function getYieldRateAttribute()
+    // Generate kode part otomatis
+    public static function generateKodePart($permintaanId)
     {
-        $total = $this->total_ok + $this->total_ng;
-        return $total > 0 ? ($this->total_ok / $total) * 100 : 0;
+        $permintaan = Permintaan::find($permintaanId);
+        $prefix = 'PART-' . date('ym') . '-';
+        
+        $count = self::where('permintaan_id', $permintaanId)->count();
+        
+        return $prefix . str_pad($count + 1, 3, '0', STR_PAD_LEFT);
     }
 }

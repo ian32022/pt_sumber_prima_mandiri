@@ -6,21 +6,34 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
         Schema::create('schedule', function (Blueprint $table) {
-            $table->id();
+            $table->id('schedule_id');
+            $table->foreignId('mesin_id')->constrained('mesin')->onDelete('cascade');
+            $table->foreignId('partlist_id')->constrained('part_list')->onDelete('cascade');
+            $table->foreignId('mfg_id')->constrained('proses_mfg')->onDelete('cascade');
+            $table->string('activity', 200);
+            $table->foreignId('pic')->constrained('users')->onDelete('cascade');
+            $table->enum('status', ['planned', 'in_progress', 'completed', 'delayed', 'cancelled'])->default('planned');
+            $table->enum('machining_status', ['waiting', 'scheduled', 'in_progress', 'completed'])->default('waiting');
+            $table->date('tanggal_plan');
+            $table->time('start_time_plan')->nullable();
+            $table->time('end_time_plan')->nullable();
+            $table->date('tanggal_act')->nullable();
+            $table->time('start_time_act')->nullable();
+            $table->time('end_time_act')->nullable();
+            $table->integer('durasi_plan_minutes')->nullable();
+            $table->integer('durasi_act_minutes')->nullable();
+            $table->text('catatan')->nullable();
             $table->timestamps();
+            
+            $table->index('tanggal_plan');
+            $table->index('status');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('schedule');
     }

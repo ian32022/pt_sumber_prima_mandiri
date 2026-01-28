@@ -10,34 +10,67 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    // Tentukan primary key custom
     protected $primaryKey = 'user_id';
-    public $incrementing = true;
-    protected $keyType = 'int';
-
-    // Nama tabel sesuai database
     protected $table = 'users';
-
-    // Kolom yang bisa diisi
+    
     protected $fillable = [
         'nama',
         'email',
         'password_hash',
         'role',
+        'last_login'
     ];
 
-    // Kolom yang harus di-hide
     protected $hidden = [
         'password_hash',
         'remember_token',
     ];
 
-    // Casting tipe data
     protected $casts = [
         'last_login' => 'datetime',
     ];
 
-    // Override method untuk password
+    // Relationship dengan Permintaan sebagai requester
+    public function permintaan()
+    {
+        return $this->hasMany(Permintaan::class, 'user_id');
+    }
+
+    // Relationship dengan PartList sebagai designer
+    public function designedParts()
+    {
+        return $this->hasMany(PartList::class, 'designer_id');
+    }
+
+    // Relationship dengan ProsesMfg sebagai operator
+    public function prosesMfg()
+    {
+        return $this->hasMany(ProsesMfg::class, 'operator_id');
+    }
+
+    // Relationship dengan Schedule sebagai PIC
+    public function schedules()
+    {
+        return $this->hasMany(Schedule::class, 'pic');
+    }
+
+    // Helper methods untuk role checking
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isDesign()
+    {
+        return $this->role === 'design';
+    }
+
+    public function isMachining()
+    {
+        return $this->role === 'machining';
+    }
+
+    // Override password field
     public function getAuthPassword()
     {
         return $this->password_hash;
