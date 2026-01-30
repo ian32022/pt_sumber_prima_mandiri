@@ -2,63 +2,81 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Mesin;
 use Illuminate\Http\Request;
 
 class MesinController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $mesins = Mesin::all();
+        return view('mesin.index', compact('mesins'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        return view('mesin.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'kode_mesin' => 'required|unique:mesin',
+            'nama_mesin' => 'required',
+            'jenis_proses' => 'required',
+            'status' => 'required',
+            'kapasitas' => 'nullable|numeric',
+            'lokasi' => 'required',
+        ]);
+
+        Mesin::create($request->all());
+
+        return redirect()->route('mesin.index')
+            ->with('success', 'Mesin berhasil ditambahkan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function edit(Mesin $mesin)
     {
-        //
+        return view('mesin.edit', compact('mesin'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function update(Request $request, Mesin $mesin)
     {
-        //
+        $request->validate([
+            'kode_mesin' => 'required|unique:mesin,kode_mesin,' . $mesin->mesin_id . ',mesin_id',
+            'nama_mesin' => 'required',
+            'jenis_proses' => 'required',
+            'status' => 'required',
+            'kapasitas' => 'nullable|numeric',
+            'lokasi' => 'required',
+        ]);
+
+        $mesin->update($request->all());
+
+        return redirect()->route('mesin.index')
+            ->with('success', 'Mesin berhasil diperbarui.');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function destroy(Mesin $mesin)
     {
-        //
+        $mesin->delete();
+
+        return redirect()->route('mesin.index')
+            ->with('success', 'Mesin berhasil dihapus.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function updateStatus(Request $request, Mesin $mesin)
     {
-        //
+        $request->validate([
+            'status' => 'required|in:active,maintenance,inactive',
+            'last_maintenance' => 'nullable|date',
+        ]);
+
+        $mesin->update([
+            'status' => $request->status,
+            'last_maintenance' => $request->last_maintenance ?? $mesin->last_maintenance,
+        ]);
+
+        return back()->with('success', 'Status mesin berhasil diperbarui.');
     }
 }

@@ -3,89 +3,115 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PermintaanController;
-use App\Http\Controllers\PartListController;
 use App\Http\Controllers\MesinController;
+use App\Http\Controllers\PartListController;
 use App\Http\Controllers\ProsesMfgController;
 use App\Http\Controllers\ScheduleController;
-use App\Http\Controllers\ReportController;
 
-// Authentication Routes (from laravel/ui)
-Auth::routes();
+// Authentication Routes
+Auth::routes(['register' => false]);
 
-// Redirect root to appropriate dashboard based on role
+// Redirect based on role
 Route::get('/', function () {
-    $user = auth()->user();
-    
-    if (!$user) {
+    if (!auth()->check()) {
         return redirect('/login');
     }
-    
+
+    $user = auth()->user();
     switch ($user->role) {
         case 'admin':
-        case 'engineer':
-            return redirect()->route('dashboard');
-        case 'operator':
-            return redirect()->route('operator.dashboard');
-        case 'requester':
-            return redirect()->route('requester.dashboard');
+            return redirect()->route('dashboard.admin');
+        case 'design':
+            return redirect()->route('dashboard.design');
+        case 'machining':
+            return redirect()->route('dashboard.machining');
         default:
             return redirect('/login');
     }
 });
 
-// Admin & Engineer Routes
-Route::middleware(['auth', 'role:admin,engineer'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+// Admin Routes
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
     
-    // Resource Controllers
-    Route::resource('permintaan', PermintaanController::class);
-    Route::resource('part-list', PartListController::class);
+    // Mesin Management
     Route::resource('mesin', MesinController::class);
-    Route::resource('proses-mfg', ProsesMfgController::class);
-    Route::resource('schedule', ScheduleController::class);
+    Route::post('mesin/{mesin}/status', [MesinController::class, 'updateStatus'])->name('mesin.status');
     
-    // Additional Routes
-    Route::post('/permintaan/{id}/approve', [PermintaanController::class, 'approve'])->name('permintaan.approve');
-    Route::post('/permintaan/{id}/reject', [PermintaanController::class, 'reject'])->name('permintaan.reject');
-    Route::get('/permintaan/{id}/parts', [PermintaanController::class, 'parts'])->name('permintaan.parts');
+    // Permintaan Management
+    Route::resource('permintaan', PermintaanController::class);
+    Route::post('permintaan/{permintaan}/approve', [PermintaanController::class, 'approve'])->name('permintaan.approve');
+    Route::post('permintaan/{permintaan}/reject', [PermintaanController::class, 'reject'])->name('permintaan.reject');
     
-    // Report Routes
-    Route::get('/reports', [ReportController::class, 'index'])->name('report.index');
-    Route::get('/reports/production', [ReportController::class, 'production'])->name('report.production');
-    Route::get('/reports/machine-utilization', [ReportController::class, 'machineUtilization'])->name('report.machine-utilization');
-    Route::get('/reports/export/excel', [ReportController::class, 'exportExcel'])->name('report.export.excel');
-    Route::get('/reports/export/pdf', [ReportController::class, 'exportPdf'])->name('report.export.pdf');
+    // Part List Management
+    Route::resource('part-list', PartListController::class);
+    Route::post('part-list/{partList}/assign', [PartListController::class, 'assignDesigner'])->name('part-list.assign');
+    Route::post('part-list/{partList}/status', [PartListController::class, 'updatePartStatus'])->name('part-list.status');
+    
+    // Schedule Overview
+    Route::get('schedule', [ScheduleController::class, 'index'])->name('schedule.index');
 });
 
-// Operator Routes
-Route::middleware(['auth', 'role:operator'])->prefix('operator')->name('operator.')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'dashboardOperator'])->name('dashboard');
-    Route::get('/tugas', [ScheduleController::class, 'tugasOperator'])->name('tugas');
-    Route::get('/proses', [ProsesMfgController::class, 'prosesOperator'])->name('proses');
+// Design Routes
+Route::middleware(['auth', 'role:design'])->prefix('design')->name('design.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'design'])->name('dashboard');
     
-    Route::post('/proses/{id}/start', [ProsesMfgController::class, 'startProses'])->name('proses.start');
-    Route::post('/proses/{id}/complete', [ProsesMfgController::class, 'completeProses'])->name('proses.complete');
-    Route::post('/proses/{id}/update-quantity', [ProsesMfgController::class, 'updateQuantity'])->name('proses.update-quantity');
+    // Part List Management for Design
+    Route::get('parts', [PartListController::class, 'index'])->name('parts.index');
+    Route::get('parts/{partList}/edit', [PartListController::class, 'edit'])->name('parts.edit');
+    Route::put('parts/{partList}', [PartListController::class, 'update'])->name('parts.update');
+    Route::get('parts/{partList}', [PartListController::class, 'show'])->name('parts.show');
+    
+    // Accept part assignment
+    Route::post('parts/{partList}/accept', function($partList) {
+        $part = \App\Models\PartList::find($partList);
+        if ($part->designer_id === auth()->id()) {
+            $part->update(['status_part' => 'belum_dibeli']);
+            return back()->with('success', 'Part berhasil diterima.');
+        }
+        return back()->with('error', 'Anda tidak berhak mengakses part ini.');
+    })->name('parts.accept');
 });
 
-// Requester Routes
-Route::middleware(['auth', 'role:requester'])->prefix('requester')->name('requester.')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+// Machining Routes
+Route::middleware(['auth', 'role:machining'])->prefix('machining')->name('machining.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'machining'])->name('dashboard');
     
-    Route::get('/permintaan/create', [PermintaanController::class, 'createRequester'])->name('permintaan.create');
-    Route::post('/permintaan', [PermintaanController::class, 'storeRequester'])->name('permintaan.store');
-    Route::get('/permintaan/{id}', [PermintaanController::class, 'showRequester'])->name('permintaan.show');
-    Route::get('/status', [PermintaanController::class, 'statusRequester'])->name('status');
+    // Schedule Management
+    Route::get('schedule', [ScheduleController::class, 'index'])->name('schedule.index');
+    Route::get('schedule/create/{partlist_id?}', [ScheduleController::class, 'create'])->name('schedule.create');
+    Route::post('schedule', [ScheduleController::class, 'store'])->name('schedule.store');
+    Route::post('schedule/{schedule}/start', [ScheduleController::class, 'startSchedule'])->name('schedule.start');
+    Route::post('schedule/{schedule}/complete', [ScheduleController::class, 'completeSchedule'])->name('schedule.complete');
+    
+    // View parts ready for machining
+    Route::get('parts', function() {
+        $parts = \App\Models\PartList::where('status_part', 'ready')
+            ->with('permintaan')
+            ->get();
+        return view('machining.parts', compact('parts'));
+    })->name('parts');
 });
 
-// Profile Route (all authenticated users)
-Route::middleware('auth')->get('/profile', function () {
-    return view('profile');
-})->name('profile');
+// Common Routes (accessible by all authenticated users)
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', function () {
+        return view('profile');
+    })->name('profile');
+    
+    Route::put('/profile/update', function (Request $request) {
+        $user = auth()->user();
+        $user->update($request->only('nama', 'email'));
+        
+        if ($request->password) {
+            $user->update(['password_hash' => Hash::make($request->password)]);
+        }
+        
+        return back()->with('success', 'Profile berhasil diperbarui.');
+    })->name('profile.update');
+});
 
-// API Routes for mobile/other systems
-Route::prefix('api')->middleware('auth:sanctum')->group(function () {
-    Route::get('/permintaan', [PermintaanController::class, 'apiIndex']);
-    Route::get('/mesin/status', [MesinController::class, 'apiStatus']);
-    Route::post('/proses/update', [ProsesMfgController::class, 'apiUpdate']);
+// Middleware untuk check role
+Route::middleware(['auth', 'role:admin,design,machining'])->group(function () {
+    // Common resources jika ada
 });
