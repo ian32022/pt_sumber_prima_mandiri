@@ -54,8 +54,23 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
 // Design Routes
 Route::middleware(['auth', 'role:design'])->prefix('design')->name('design.')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'design'])->name('dashboard');
+    Route::prefix('design')->name('design.')->group(function () {
+
+    Route::get('/dashboard', function () {
+        return view('design.dasbord_design');
+    })->name('dashboard');
+
+    Route::get('/request', function () {
+        return view('design.request_design');
+    })->name('request');
+
+    Route::get('/master', function () {
+        return view('design.master_design');
+    })->name('master');
+
+});
     
+
     // Part List Management for Design
     Route::get('parts', [PartListController::class, 'index'])->name('parts.index');
     Route::get('parts/{partList}/edit', [PartListController::class, 'edit'])->name('parts.edit');

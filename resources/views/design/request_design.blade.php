@@ -79,9 +79,9 @@
                 <div class="company-name">PT Sumber<br>Prima Mandiri<br><small class="text-muted fw-normal">Design System</small></div>
             </div>
             <ul class="nav flex-column sidebar-nav">
-                <li class="nav-item"><a class="nav-link" href="dasboard.html"><i class="bi bi-grid-fill"></i> Dashboards</a></li>
-                <li class="nav-item"><a class="nav-link active" href="request.html"><i class="bi bi-file-text"></i> Request Management</a></li>
-                <li class="nav-item"><a class="nav-link" href="master.html"><i class="bi bi-calendar-check"></i> Master Schedule</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ route('design.dasbord') }}"><i class="bi bi-grid-fill"></i> Dashboards</a></li>
+                <li class="nav-item"><a class="nav-link active" href="{{ route('design.request') }}"><i class="bi bi-file-text"></i> Request Management</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ route('design.master') }}"><i class="bi bi-calendar-check"></i> Master Schedule</a></li>
             </ul>
         </nav>
 
