@@ -6,13 +6,20 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+// Import model relasi
+use App\Models\Permintaan;
+use App\Models\PartList;
+use App\Models\ProsesMfg;
+use App\Models\Schedule;
+
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    protected $primaryKey = 'user_id';
     protected $table = 'users';
-    
+    protected $primaryKey = 'user_id';
+
+    // Kolom yang bisa diisi
     protected $fillable = [
         'nama',
         'email',
@@ -21,40 +28,64 @@ class User extends Authenticatable
         'last_login'
     ];
 
+    // Kolom yang disembunyikan
     protected $hidden = [
         'password_hash',
-        'remember_token',
+        'remember_token'
     ];
 
     protected $casts = [
         'last_login' => 'datetime',
     ];
 
-    // Relationship dengan Permintaan sebagai requester
+    /*
+    |--------------------------------------------------------------------------
+    | AUTH PASSWORD FIELD
+    |--------------------------------------------------------------------------
+    | Laravel menggunakan field password, tetapi database kita password_hash
+    */
+
+    public function getAuthPassword()
+    {
+        return $this->password_hash;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | RELATIONSHIPS
+    |--------------------------------------------------------------------------
+    */
+
+    // Permintaan yang dibuat user
     public function permintaan()
     {
         return $this->hasMany(Permintaan::class, 'user_id');
     }
 
-    // Relationship dengan PartList sebagai designer
+    // Part yang didesign
     public function designedParts()
     {
         return $this->hasMany(PartList::class, 'designer_id');
     }
 
-    // Relationship dengan ProsesMfg sebagai operator
+    // Proses manufaktur oleh operator
     public function prosesMfg()
     {
         return $this->hasMany(ProsesMfg::class, 'operator_id');
     }
 
-    // Relationship dengan Schedule sebagai PIC
+    // Schedule sebagai PIC
     public function schedules()
     {
         return $this->hasMany(Schedule::class, 'pic');
     }
 
-    // Helper methods untuk role checking
+    /*
+    |--------------------------------------------------------------------------
+    | ROLE CHECK
+    |--------------------------------------------------------------------------
+    */
+
     public function isAdmin()
     {
         return $this->role === 'admin';
@@ -62,17 +93,57 @@ class User extends Authenticatable
 
     public function isDesign()
     {
-        return $this->role === 'design';
+        return $this->role === 'engineer';
     }
 
     public function isMachining()
     {
-        return $this->role === 'machining';
+        return $this->role === 'operator';
     }
 
-    // Override password field
-    public function getAuthPassword()
+    /*
+    |--------------------------------------------------------------------------
+    | ROLE NAME UNTUK TAMPILAN UI
+    |--------------------------------------------------------------------------
+    */
+
+    public function getRoleNameAttribute()
     {
-        return $this->password_hash;
+        return match($this->role) {
+            'admin' => 'Admin',
+            'engineer' => 'Design',
+            'operator' => 'Machine',
+            default => 'User'
+        };
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | NAMA DARI EMAIL (OPSIONAL)
+    |--------------------------------------------------------------------------
+    | Jika nama kosong, otomatis ambil dari email
+    */
+
+    public function getDisplayNameAttribute()
+    {
+        if ($this->nama) {
+            return $this->nama;
+        }
+
+        $name = explode('@', $this->email)[0];
+        return ucfirst($name);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | UPDATE LAST LOGIN
+    |--------------------------------------------------------------------------
+    */
+
+    public function updateLastLogin()
+    {
+        $this->update([
+            'last_login' => now()
+        ]);
     }
 }

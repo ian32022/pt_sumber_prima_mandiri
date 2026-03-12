@@ -9,7 +9,10 @@ use App\Http\Controllers\ProsesMfgController;
 use App\Http\Controllers\ScheduleController;
 
 // Authentication Routes
-Auth::routes(['register' => false]);
+//Auth::routes(['register' => false]);
+Route::get('/login',[LoginController::class,'showLogin'])->name('login');
+Route::post('/login',[LoginController::class,'login'])->name('login.process');
+Route::get('/logout',[LoginController::class,'logout'])->name('logout');
 
 // Redirect based on role
 Route::get('/', function () {
