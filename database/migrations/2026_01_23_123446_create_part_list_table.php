@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('part_list', function (Blueprint $table) {
             $table->id('partlist_id');
-            $table->foreignId('permintaan_id')->constrained('permintaan')->onDelete('cascade');
-            $table->foreignId('designer_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('permintaan_id')->constrained('permintaan', 'permintaan_id')->cascadeOnDelete();
+            $table->foreignId('designer_id')->nullable()->constrained('users', 'user_id')->nullOnDelete();
             $table->string('kode_part', 50)->unique();
             $table->string('nama_part', 100);
             $table->string('material', 50)->nullable();

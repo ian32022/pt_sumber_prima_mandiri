@@ -10,11 +10,11 @@ return new class extends Migration
     {
         Schema::create('schedule', function (Blueprint $table) {
             $table->id('schedule_id');
-            $table->foreignId('mesin_id')->constrained('mesin')->onDelete('cascade');
-            $table->foreignId('partlist_id')->constrained('part_list')->onDelete('cascade');
-            $table->foreignId('mfg_id')->constrained('proses_mfg')->onDelete('cascade');
+            $table->foreignId('mesin_id')->constrained('mesin', 'mesin_id')->onDelete('cascade');
+            $table->foreignId('partlist_id')->constrained('part_list', 'partlist_id')->onDelete('cascade');
+            $table->foreignId('mfg_id')->constrained('proses_mfg', 'mfg_id')->onDelete('cascade');
             $table->string('activity', 200);
-            $table->foreignId('pic')->constrained('users')->onDelete('cascade');
+            $table->foreignId('pic')->constrained('users', 'user_id')->cascadeOnDelete();
             $table->enum('status', ['planned', 'in_progress', 'completed', 'delayed', 'cancelled'])->default('planned');
             $table->enum('machining_status', ['waiting', 'scheduled', 'in_progress', 'completed'])->default('waiting');
             $table->date('tanggal_plan');

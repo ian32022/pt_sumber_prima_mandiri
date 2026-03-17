@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('permintaan', function (Blueprint $table) {
             $table->id('permintaan_id');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users', 'user_id')->cascadeOnDelete();
             $table->string('nomor_permintaan', 50)->unique();
             $table->text('deskripsi_kebutuhan');
             $table->string('jenis_produk', 100)->nullable();
