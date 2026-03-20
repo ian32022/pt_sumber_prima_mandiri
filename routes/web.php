@@ -10,7 +10,6 @@ use App\Http\Controllers\ProsesMfgController;
 use App\Http\Controllers\ScheduleController;
 
 // Authentication Routes
-//Auth::routes(['register' => false]);
 Route::get('/login',[LoginController::class,'showLogin'])->name('login');
 Route::post('/login',[LoginController::class,'login'])->name('login.process');
 Route::get('/logout',[LoginController::class,'logout'])->name('logout');
@@ -23,15 +22,15 @@ Route::get('/', function () {
 
     $user = auth()->user();
     switch ($user->role) {
-        case 'admin':
-            return redirect()->route('dashboard.admin');
-        case 'design':
-            return redirect()->route('dashboard.design');
-        case 'machining':
-            return redirect()->route('dashboard.machining');
-        default:
-            return redirect('/login');
-    }
+            case 'admin':
+                return redirect()->route('admin.dashboard');
+            case 'engineer':
+                return redirect()->route('engineer.dashboard');
+            case 'operator':
+                return redirect()->route('operator.dashboard');
+            default:
+                return redirect('/login');
+        }
 });
 
 // Admin Routes
@@ -57,23 +56,19 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 });
 
 // Design Routes
-Route::middleware(['auth', 'role:design'])->prefix('design')->name('design.')->group(function () {
-    Route::prefix('design')->name('design.')->group(function () {
+Route::middleware(['auth', 'role:engineer'])->prefix('engineer')->name('engineer.')->group(function () {
 
     Route::get('/dashboard', function () {
-        return view('design.dasbord_design');
+        return view('engineer.dashboard');
     })->name('dashboard');
 
     Route::get('/request', function () {
-        return view('design.request_design');
+        return view('engineer.request');
     })->name('request');
 
     Route::get('/master', function () {
-        return view('design.master_design');
+        return view('engineer.master');
     })->name('master');
-
-});
-    
 
     // Part List Management for Design
     Route::get('parts', [PartListController::class, 'index'])->name('parts.index');
@@ -90,11 +85,12 @@ Route::middleware(['auth', 'role:design'])->prefix('design')->name('design.')->g
         }
         return back()->with('error', 'Anda tidak berhak mengakses part ini.');
     })->name('parts.accept');
-});
+
+}); // <-- end engineer group
 
 // Machining Routes
-Route::middleware(['auth', 'role:machining'])->prefix('machining')->name('machining.')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'machining'])->name('dashboard');
+Route::middleware(['auth', 'role:operator'])->prefix('operator')->name('operator.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'operator'])->name('dashboard');
     
     // Schedule Management
     Route::get('schedule', [ScheduleController::class, 'index'])->name('schedule.index');
@@ -128,9 +124,4 @@ Route::middleware('auth')->group(function () {
         
         return back()->with('success', 'Profile berhasil diperbarui.');
     })->name('profile.update');
-});
-
-// Middleware untuk check role
-Route::middleware(['auth', 'role:admin,design,machining'])->group(function () {
-    // Common resources jika ada
 });

@@ -19,6 +19,11 @@ class LoginController extends Controller
 
     public function showLogin()
     {
+        // Jika sudah login, langsung redirect ke dashboard sesuai role
+        if (Auth::check()) {
+            return $this->redirectByRole(Auth::user());
+        }
+
         return view('auth.login');
     }
 
@@ -31,16 +36,19 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-
+        // Validasi input
         $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
+            'email'    => 'required|email',
+            'password' => 'required|min:6'
+        ], [
+            'email.required'    => 'Email wajib diisi.',
+            'email.email'       => 'Format email tidak valid.',
+            'password.required' => 'Password wajib diisi.',
+            'password.min'      => 'Password minimal 6 karakter.',
         ]);
 
-
-        $email = $request->email;
+        $email    = strtolower(trim($request->email));
         $password = $request->password;
-
 
         /*
         |--------------------------------------------------------------------------
@@ -48,60 +56,11 @@ class LoginController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if (!str_contains($email, '@sumberprimamandiri.com')) {
-            return back()->with('error','Gunakan email perusahaan');
+        if (!str_ends_with($email, '@sumberprimamandiri.com')) {
+            return back()
+                ->withInput($request->only('email'))
+                ->with('error', 'Gunakan email perusahaan (@sumberprimamandiri.com).');
         }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | FORMAT EMAIL : nama.role@sumberprimamandiri.com
-        |--------------------------------------------------------------------------
-        */
-
-        $emailParts = explode('@', $email)[0];
-
-        if (!str_contains($emailParts,'.')) {
-            return back()->with('error','Format email harus nama.role@sumberprimamandiri.com');
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | AMBIL NAMA DAN ROLE
-        |--------------------------------------------------------------------------
-        */
-
-        $parts = explode('.', $emailParts);
-
-        $nama = ucfirst($parts[0]);
-        $roleInput = strtolower($parts[1]);
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | MAPPING ROLE
-        |--------------------------------------------------------------------------
-        */
-
-        if ($roleInput == 'admin') {
-
-            $role = 'admin';
-
-        } elseif ($roleInput == 'design') {
-
-            $role = 'engineer';
-
-        } elseif ($roleInput == 'machine') {
-
-            $role = 'operator';
-
-        } else {
-
-            return back()->with('error','Role tidak valid');
-
-        }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -109,19 +68,26 @@ class LoginController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $user = User::where('email',$email)->first();
+        $user = User::where('email', $email)->first();
 
-        if(!$user){
-
-            $user = User::create([
-                'nama' => $nama,
-                'email' => $email,
-                'password_hash' => Hash::make($password),
-                'role' => $role
-            ]);
-
+        // Jika user tidak ditemukan
+        if (!$user) {
+            return back()
+                ->withInput($request->only('email'))
+                ->with('error', 'Email tidak terdaftar. Hubungi admin.');
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | VERIFIKASI PASSWORD
+        |--------------------------------------------------------------------------
+        */
+
+        if (!Hash::check($password, $user->password_hash)) {
+            return back()
+                ->withInput($request->only('email'))
+                ->with('error', 'Email atau password salah.');
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -129,8 +95,13 @@ class LoginController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        Auth::login($user);
+        Auth::login($user, $request->boolean('remember'));
 
+        // Update waktu login terakhir
+        $user->updateLastLogin();
+
+        // Regenerasi session untuk keamanan
+        $request->session()->regenerate();
 
         /*
         |--------------------------------------------------------------------------
@@ -138,22 +109,8 @@ class LoginController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if($user->role == 'admin'){
-            return redirect('/admin/dashboard');
-        }
-
-        if($user->role == 'engineer'){
-            return redirect('/design/dashboard');
-        }
-
-        if($user->role == 'operator'){
-            return redirect('/machining/dashboard');
-        }
-
-        return redirect('/login');
-
+        return $this->redirectByRole($user);
     }
-
 
 
     /*
@@ -164,14 +121,28 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
-
         Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login');
-
+        return redirect()->route('login')->with('success', 'Anda berhasil logout.');
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | HELPER : REDIRECT BERDASARKAN ROLE
+    |--------------------------------------------------------------------------
+    */
+
+    private function redirectByRole(User $user)
+    {
+        return match($user->role) {
+            'admin'    => redirect()->route('admin.dashboard'),
+            'engineer' => redirect()->route('engineer.dashboard'),
+            'operator' => redirect()->route('operator.dashboard'),
+            default    => redirect()->route('login')->with('error', 'Role tidak dikenali.')
+        };
+    }
 }

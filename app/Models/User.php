@@ -115,8 +115,8 @@ class User extends Authenticatable
     {
         return match($this->role) {
             'admin' => 'Admin',
-            'engineer' => 'Design',
-            'operator' => 'Machine',
+            'engineer' => 'Engineer',
+            'operator' => 'Operator',
             default => 'User'
         };
     }
