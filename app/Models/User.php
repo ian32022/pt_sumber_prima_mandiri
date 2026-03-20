@@ -44,6 +44,10 @@ class User extends Authenticatable
     |--------------------------------------------------------------------------
     | Laravel menggunakan field password, tetapi database kita password_hash
     */
+    public function getAuthIdentifierName()
+    {
+        return 'user_id';
+    }
 
     public function getAuthPassword()
     {
