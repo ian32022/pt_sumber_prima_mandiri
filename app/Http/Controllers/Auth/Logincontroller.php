@@ -59,7 +59,7 @@ class LoginController extends Controller
         if (!str_ends_with($email, '@sumberprimamandiri.com')) {
             return back()
                 ->withInput($request->only('email'))
-                ->with('error', 'Gunakan email perusahaan (@sumberprimamandiri.com).');
+                ->with('error', 'Gunakan email perusahaan ');
         }
 
         /*

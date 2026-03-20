@@ -75,7 +75,7 @@
 {{-- ── SIDEBAR ── --}}
 <div id="sidebar">
     <div class="sidebar-brand">
-        <img src="https://via.placeholder.com/40/0d6efd/ffffff?text=S" alt="Logo" style="border-radius:50%;">
+        <img src="{{asset('img/logo-pt-sumber-prima-mandiri.png')}}" alt="Logo" style="border-radius:50%;">
         <div class="sidebar-brand-text">
             <h6>PT Sumber Prima Mandiri</h6>
             <span>Production System</span>
