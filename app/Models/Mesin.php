@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ProsesMfg;
+use App\Models\Schedule;
 
 class Mesin extends Model
 {
@@ -49,7 +51,7 @@ class Mesin extends Model
     public function getUtilizationRate()
     {
         $totalScheduled = $this->schedules()->where('status', 'completed')->count();
-        $totalPossible = 30; // assuming 30 days/month
+       $totalPossible = now()->daysInMonth;
         
         return $totalPossible > 0 ? ($totalScheduled / $totalPossible) * 100 : 0;
     }
