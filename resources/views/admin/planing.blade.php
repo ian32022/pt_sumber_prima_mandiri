@@ -93,10 +93,23 @@
             </div>
         </div>
         <nav class="nav flex-column">
-             <a class="nav-link active" href="{{ route('admin.dasbord') }}"><i class="bi bi-grid-1x2"></i> Dashboard</a>
-            <a class="nav-link" href="{{ route('admin.request') }}"><i class="bi bi-file-earmark-text"></i> Request Management</a>
-            <a class="nav-link" href="{{ route('admin.planning') }}"><i class="bi bi-calendar-event"></i> Production Planning</a>
-            <a class="nav-link" href="{{ route('admin.master') }}"><i class="bi bi-ui-checks"></i> Master Schedule</a>
+             <nav class="nav flex-column">
+        {{-- Sesuai file: dasbord.blade.php --}}
+        <a class="nav-link active" href="{{ route('admin.dashboard') }}">
+            <i class="bi bi-grid-1x2"></i> Dashboard
+        </a>
+        {{-- Sesuai file: request.blade.php --}}
+        <a class="nav-link" href="{{ route('admin.permintaan.index') }}">
+            <i class="bi bi-file-earmark-text"></i> Request Management
+        </a>
+        {{-- Sesuai file: planing.blade.php --}}
+        <a class="nav-link" href="{{ route('admin.schedule.index') }}">
+            <i class="bi bi-calendar-event"></i> Production Planning
+        </a>
+        {{-- Sesuai file: master.blade.php --}}
+        <a class="nav-link" href="{{ route('admin.part-list.index') }}">
+            <i class="bi bi-ui-checks"></i> Master Schedule
+        </a>
             <div class="sidebar-heading">SUPPORT</div>
             <a class="nav-link" href="#"><i class="bi bi-gear"></i> Settings</a>
             <a class="nav-link" href="#"><i class="bi bi-question-circle"></i> Help Desk</a>

@@ -94,11 +94,23 @@
         </div>
     </div>
     <nav class="nav flex-column">
-        <a class="nav-link" href="{{ route('admin.dashboard') }}"><i class="bi bi-grid-1x2"></i> Dashboard</a>
-        <a class="nav-link active" href="{{ route('admin.permintaan.index') }}"><i class="bi bi-file-earmark-text"></i> Request Management</a>
-        <a class="nav-link" href="{{ route('admin.schedule.index') }}"><i class="bi bi-calendar-event"></i> Production Planning</a>
-        <a class="nav-link" href="{{ route('admin.part-list.index') }}"><i class="bi bi-ui-checks"></i> Master Schedule</a>
-        <a class="nav-link" href="{{ route('admin.mesin.index') }}"><i class="bi bi-gear"></i> Mesin</a>
+         <nav class="nav flex-column">
+        {{-- Sesuai file: dasbord.blade.php --}}
+        <a class="nav-link active" href="{{ route('admin.dashboard') }}">
+            <i class="bi bi-grid-1x2"></i> Dashboard
+        </a>
+        {{-- Sesuai file: request.blade.php --}}
+        <a class="nav-link" href="{{ route('admin.permintaan.index') }}">
+            <i class="bi bi-file-earmark-text"></i> Request Management
+        </a>
+        {{-- Sesuai file: planing.blade.php --}}
+        <a class="nav-link" href="{{ route('admin.schedule.index') }}">
+            <i class="bi bi-calendar-event"></i> Production Planning
+        </a>
+        {{-- Sesuai file: master.blade.php --}}
+        <a class="nav-link" href="{{ route('admin.part-list.index') }}">
+            <i class="bi bi-ui-checks"></i> Master Schedule
+        </a>
         <div class="sidebar-heading">AKUN</div>
         <a class="nav-link" href="{{ route('profile') }}"><i class="bi bi-person"></i> Profil Saya</a>
         <a class="nav-link text-danger" href="{{ route('logout') }}"><i class="bi bi-box-arrow-right"></i> Logout</a>
