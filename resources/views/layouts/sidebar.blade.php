@@ -24,18 +24,15 @@
                class="{{ request()->routeIs('admin.permintaan.*') ? 'active' : '' }}">
                 <i class="bi bi-file-text"></i> Request Management
             </a>
-            <a href="{{ route('admin.part-list.index') }}"
-               class="{{ request()->routeIs('admin.part-list.*') ? 'active' : '' }}">
-                <i class="bi bi-table"></i> Master Schedule
+            <a href="{{ route('admin.planning.index') }}"
+               class="{{ request()->routeIs('admin.planning.*') ? 'active' : '' }}">
+                <i class="bi bi-table"></i> Production Planning
             </a>
             <a href="{{ route('admin.schedule.index') }}"
                class="{{ request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
-                <i class="bi bi-tools"></i> Schedule MFG
+                <i class="bi bi-tools"></i> Master Schedule
             </a>
-            <a href="{{ route('admin.mesin.index') }}"
-               class="{{ request()->routeIs('admin.mesin.*') ? 'active' : '' }}">
-                <i class="bi bi-gear"></i> Mesin
-            </a>
+            
 
         {{-- ── MENU ENGINEER ── --}}
         @elseif($role === 'engineer')

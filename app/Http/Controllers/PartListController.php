@@ -16,7 +16,7 @@ class PartListController extends Controller
     */
     public function index(Request $request)
     {
-        // ✅ Support AJAX untuk load part list per permintaan (dari request.blade.php)
+        // ✅ Support AJAX untuk load part list per permintaan (dari planning.blade.php)
         if ($request->ajax() && $request->has('permintaan_id')) {
             $parts = PartList::where('permintaan_id', $request->permintaan_id)->get();
             return response()->json($parts);
@@ -26,8 +26,19 @@ class PartListController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // ✅ Fix: view disesuaikan dengan folder admin/
-        return view('admin.part-list', compact('parts'));
+        // ✅ Fix: kirim $permintaan ke view
+        $permintaan = Permintaan::with('partLists')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // ✅ Bedakan view berdasarkan role
+        $role = auth()->user()->role;
+
+        if ($role === 'engineer') {
+            return view('engineer.parts', compact('parts', 'permintaan'));
+        }
+
+        return view('admin.planning', compact('parts', 'permintaan'));
     }
 
     /*
@@ -37,7 +48,12 @@ class PartListController extends Controller
     */
     public function create($permintaan_id = null)
     {
-        // ✅ Fix: tidak perlu view terpisah, pakai modal di admin.part-list
+        $role = auth()->user()->role;
+
+        if ($role === 'engineer') {
+            return redirect()->route('engineer.parts.index');
+        }
+
         return redirect()->route('admin.part-list.index');
     }
 
@@ -49,15 +65,15 @@ class PartListController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'permintaan_id'  => 'required|exists:permintaan,permintaan_id',
-            'nama_part'      => 'required|string|max:150',
-            'material'       => 'nullable|string|max:100',
-            'dimensi'        => 'nullable|string|max:100',
-            'dimensi_belanja'=> 'nullable|string|max:100',
-            'quantity'       => 'required|integer|min:1',
-            'unit'           => 'required|string|max:20',
-            'berat'          => 'nullable|numeric|min:0',
-            'status_part'    => 'required|in:draft,belum_dibeli,dibeli,indent,ready',
+            'permintaan_id'   => 'required|exists:permintaan,permintaan_id',
+            'nama_part'       => 'required|string|max:150',
+            'material'        => 'nullable|string|max:100',
+            'dimensi'         => 'nullable|string|max:100',
+            'dimensi_belanja' => 'nullable|string|max:100',
+            'quantity'        => 'required|integer|min:1',
+            'unit'            => 'required|string|max:20',
+            'berat'           => 'nullable|numeric|min:0',
+            'status_part'     => 'required|in:draft,belum_dibeli,dibeli,indent,ready',
         ], [
             'permintaan_id.required' => 'Permintaan wajib dipilih.',
             'nama_part.required'     => 'Nama part wajib diisi.',
@@ -71,7 +87,13 @@ class PartListController extends Controller
 
         PartList::create($data);
 
-        // ✅ Fix: route disesuaikan
+        $role = auth()->user()->role;
+
+        if ($role === 'engineer') {
+            return redirect()->route('engineer.parts.index')
+                ->with('success', 'Part berhasil ditambahkan.');
+        }
+
         return redirect()->route('admin.part-list.index')
             ->with('success', 'Part berhasil ditambahkan.');
     }
@@ -85,8 +107,18 @@ class PartListController extends Controller
     {
         $partList->load(['permintaan', 'designer', 'prosesMfg', 'schedules']);
 
-        // ✅ Fix: view disesuaikan
-        return view('admin.part-list', compact('partList'));
+        $role = auth()->user()->role;
+
+        if ($role === 'engineer') {
+            return view('engineer.parts-detail', compact('partList'));
+        }
+
+        // ✅ Fix: kirim $permintaan agar view tidak error
+        $permintaan = Permintaan::with('partLists')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.planning', compact('partList', 'permintaan'));
     }
 
     /*
@@ -99,6 +131,13 @@ class PartListController extends Controller
         if (request()->ajax()) {
             return response()->json($partList);
         }
+
+        $role = auth()->user()->role;
+
+        if ($role === 'engineer') {
+            return redirect()->route('engineer.parts.index');
+        }
+
         return redirect()->route('admin.part-list.index');
     }
 
@@ -110,15 +149,15 @@ class PartListController extends Controller
     public function update(Request $request, PartList $partList)
     {
         $request->validate([
-            'nama_part'      => 'required|string|max:150',
-            'material'       => 'nullable|string|max:100',
-            'dimensi'        => 'nullable|string|max:100',
-            'dimensi_belanja'=> 'nullable|string|max:100',
-            'quantity'       => 'required|integer|min:1',
-            'unit'           => 'required|string|max:20',
-            'berat'          => 'nullable|numeric|min:0',
-            'status_part'    => 'required|in:draft,belum_dibeli,dibeli,indent,ready',
-            'designer_id'    => 'nullable|exists:users,user_id',
+            'nama_part'       => 'required|string|max:150',
+            'material'        => 'nullable|string|max:100',
+            'dimensi'         => 'nullable|string|max:100',
+            'dimensi_belanja' => 'nullable|string|max:100',
+            'quantity'        => 'required|integer|min:1',
+            'unit'            => 'required|string|max:20',
+            'berat'           => 'nullable|numeric|min:0',
+            'status_part'     => 'required|in:draft,belum_dibeli,dibeli,indent,ready',
+            'designer_id'     => 'nullable|exists:users,user_id',
         ], [
             'nama_part.required'   => 'Nama part wajib diisi.',
             'quantity.required'    => 'Quantity wajib diisi.',
@@ -128,7 +167,13 @@ class PartListController extends Controller
 
         $partList->update($request->all());
 
-        // ✅ Fix: route disesuaikan
+        $role = auth()->user()->role;
+
+        if ($role === 'engineer') {
+            return redirect()->route('engineer.parts.index')
+                ->with('success', 'Part berhasil diperbarui.');
+        }
+
         return redirect()->route('admin.part-list.index')
             ->with('success', 'Part berhasil diperbarui.');
     }
@@ -142,7 +187,13 @@ class PartListController extends Controller
     {
         $partList->delete();
 
-        // ✅ Fix: route disesuaikan
+        $role = auth()->user()->role;
+
+        if ($role === 'engineer') {
+            return redirect()->route('engineer.parts.index')
+                ->with('success', 'Part berhasil dihapus.');
+        }
+
         return redirect()->route('admin.part-list.index')
             ->with('success', 'Part berhasil dihapus.');
     }

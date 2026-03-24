@@ -3,6 +3,7 @@
 <head>
     <title>Production System</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             margin: 0;
@@ -70,12 +71,12 @@
             font-size: 14px;
         }
 
-        .menu a:hover { background: #f3f4f6; }
+        .menu a:hover  { background: #f3f4f6; }
         .menu a.active { background: #2563eb; color: white; }
         .menu hr { border: none; border-top: 1px solid #eee; margin: 10px 0; }
 
         /* MAIN */
-        .main { margin-left: 250px; }
+        .main    { margin-left: 250px; }
         .content { padding: 30px; }
 
         /* TOPBAR */
@@ -178,7 +179,37 @@
             margin-bottom: 20px;
             font-size: 14px;
         }
+
+        /* ── Dashboard Cards (dipakai di dashboard.blade.php) ── */
+        .custom-card        { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); height: 100%; }
+        .card-border-blue   { border: 2px solid #e0ebff; }
+        .card-border-yellow { border: 2px solid #fff3cd; }
+        .card-border-orange { border: 2px solid #ffe5d0; }
+        .card-border-green  { border: 2px solid #d1f2e2; }
+        .icon-box    { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 15px; }
+        .icon-blue   { background: #eff5ff; color: #0d6efd; }
+        .icon-yellow { background: #fffdf0; color: #ffc107; }
+        .icon-orange { background: #fff6f0; color: #fd7e14; }
+        .icon-green  { background: #f0fdf4; color: #198754; }
+        .chart-toggle-btn        { border: 1px solid #eee; background: #f8f9fa; color: #6c757d; font-size: 13px; padding: 5px 15px; }
+        .chart-toggle-btn.active { background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-weight: 600; color: #0d6efd; border-radius: 6px; }
+        .legend-item       { background: #fff; border: 1px solid #eee; padding: 10px 15px; border-radius: 10px; text-align: center; width: 80px; cursor: pointer; transition: 0.2s; }
+        .legend-item:hover { border-color: #0d6efd; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .activity-feed { background: #fffdfa; }
+        .timeline      { list-style: none; padding-left: 10px; }
+        .timeline-item { position: relative; padding-left: 25px; padding-bottom: 20px; display: flex; justify-content: space-between; cursor: pointer; transition: 0.2s; border-radius: 8px; }
+        .timeline-item:hover              { background-color: #f8f9fa; padding-right: 10px; }
+        .timeline-item::before            { content: ''; position: absolute; left: 0; top: 6px; width: 8px; height: 8px; border-radius: 50%; }
+        .timeline-item.dot-blue::before   { background-color: #0d6efd; }
+        .timeline-item.dot-green::before  { background-color: #20c997; }
+        .timeline-item.dot-grey::before   { background-color: #adb5bd; }
+        .timeline-item.dot-yellow::before { background-color: #ffc107; }
+        .time-text { font-size: 12px; color: #adb5bd; }
     </style>
+
+    {{-- ✅ TAMBAHAN 1: CSS khusus dari masing-masing halaman --}}
+    @yield('styles')
 </head>
 <body>
 
@@ -200,10 +231,17 @@
             <div class="flash-error">⚠️ {{ session('error') }}</div>
         @endif
 
+        {{-- Konten dari masing-masing halaman --}}
         @yield('content')
 
     </div>
 </div>
+
+{{-- ✅ TAMBAHAN 2: Bootstrap JS (wajib untuk modal, dropdown, alert) --}}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+{{-- ✅ TAMBAHAN 3: Script khusus dari masing-masing halaman --}}
+@stack('scripts')
 
 </body>
 </html>

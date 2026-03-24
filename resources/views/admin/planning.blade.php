@@ -3,22 +3,27 @@
 @section('styles')
 <style>
     .card-custom { background-color: #fff; border-radius: 12px; border: 1px solid #e0e0e0; padding: 25px; margin-bottom: 25px; }
+
     .table-custom { width: 100%; margin-top: 15px; }
     .table-custom thead th { font-size: 0.75rem; text-transform: uppercase; color: #888; letter-spacing: 0.5px; padding-bottom: 15px; border-bottom: 1px solid #ededed; }
     .table-custom tbody td { font-size: 0.9rem; padding: 18px 0; border-bottom: 1px solid #ededed; vertical-align: middle; }
+
     .machine-name { font-weight: 600; color: #333; }
     .machine-desc { font-size: 0.8rem; color: #777; margin-top: 3px; }
-    .status-badge        { font-size: 0.8rem; padding: 4px 10px; border-radius: 20px; font-weight: 500; }
-    .status-draft        { background-color: #e2e3e5; color: #41464b; }
-    .status-submitted    { background-color: #cfe2ff; color: #084298; }
-    .status-approved     { background-color: #d1e7dd; color: #0f5132; }
-    .status-rejected     { background-color: #f8d7da; color: #842029; }
-    .status-in_progress  { background-color: #fff3cd; color: #856404; }
-    .status-completed    { background-color: #d1e7dd; color: #0f5132; }
+
+    .status-badge       { font-size: 0.8rem; padding: 4px 10px; border-radius: 20px; font-weight: 500; }
+    .status-draft       { background-color: #e2e3e5; color: #41464b; }
+    .status-submitted   { background-color: #cfe2ff; color: #084298; }
+    .status-approved    { background-color: #d1e7dd; color: #0f5132; }
+    .status-rejected    { background-color: #f8d7da; color: #842029; }
+    .status-in_progress { background-color: #fff3cd; color: #856404; }
+    .status-completed   { background-color: #d1e7dd; color: #0f5132; }
+
     .priority-low    { background: #e2e3e5; color: #41464b; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; }
     .priority-medium { background: #cfe2ff; color: #084298; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; }
     .priority-high   { background: #fff3cd; color: #856404; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; }
     .priority-urgent { background: #f8d7da; color: #842029; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; }
+
     .action-icons { display: flex; gap: 12px; font-size: 1.1rem; }
     .action-icon { cursor: pointer; transition: transform 0.2s; }
     .action-icon:hover { transform: scale(1.1); }
@@ -27,23 +32,44 @@
     .icon-delete  { color: #dc3545; }
     .icon-approve { color: #198754; }
     .icon-reject  { color: #dc3545; }
+
     .modal-content { border-radius: 12px; border: none; padding: 10px; }
     .modal-header  { border-bottom: none; padding-bottom: 5px; }
     .modal-footer  { border-top: none; padding-top: 5px; }
-    .form-label-custom { font-size: 0.85rem; color: #666; margin-bottom: 5px; }
-    .form-control-custom { border-radius: 8px; padding: 10px 15px; border: 1px solid #ccc; }
-    .required-star { color: #dc3545; margin-left: 3px; }
+
+    .form-label-custom    { font-size: 0.85rem; color: #666; margin-bottom: 5px; }
+    .form-control-custom  { border-radius: 8px; padding: 10px 15px; border: 1px solid #ccc; }
+    .required-star        { color: #dc3545; margin-left: 3px; }
+
     #part-listing-container { display: none; }
+
     .part-detail-label { font-size: 0.8rem; color: #888; margin-bottom: 2px; }
     .part-detail-value { font-size: 1rem; color: #333; font-weight: 500; }
+
     .progress-sm { height: 6px; border-radius: 99px; }
 </style>
 @endsection
 
 @section('content')
 
+{{-- ── ALERT SUCCESS / ERROR ── --}}
+@if(session('success'))
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ session('success') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
+@if(session('error'))
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ session('error') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
 {{-- ── REQUEST LIST ── --}}
 <div id="request-management-container">
+
     <div class="page-header d-flex justify-content-between align-items-start mb-4">
         <div>
             <h2>Request Management</h2>
@@ -56,11 +82,15 @@
     </div>
 
     <div class="card-custom">
+
         {{-- Filter --}}
         <div class="d-flex justify-content-between gap-3 mb-4">
             <div class="input-group" style="max-width:500px;">
-                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" id="tableSearch" class="form-control border-start-0" placeholder="Cari Request ID, jenis produk...">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text" id="tableSearch" class="form-control border-start-0"
+                       placeholder="Cari Request ID, jenis produk...">
             </div>
             <select id="statusFilter" class="form-select" style="max-width:160px;">
                 <option value="">All Status</option>
@@ -114,6 +144,7 @@
                     </td>
                     <td>
                         <div class="action-icons">
+
                             {{-- Lihat Part List --}}
                             <i class="bi bi-eye action-icon icon-view"
                                title="Lihat Part List"
@@ -145,6 +176,7 @@
                                     <i class="bi bi-trash action-icon icon-delete"></i>
                                 </button>
                             </form>
+
                         </div>
                     </td>
                 </tr>
@@ -158,11 +190,13 @@
                 @endforelse
             </tbody>
         </table>
+
     </div>
 </div>
 
 {{-- ── PART LISTING ── --}}
 <div id="part-listing-container">
+
     <div class="page-header mb-4">
         <a href="#" class="text-decoration-none text-muted" onclick="hidePartListing()">
             <i class="bi bi-arrow-left me-2"></i> Back to Request Management
@@ -178,6 +212,7 @@
             <p class="text-muted">Memuat data...</p>
         </div>
     </div>
+
 </div>
 
 {{-- ── MODAL: TAMBAH PERMINTAAN ── --}}
@@ -191,6 +226,7 @@
             <form action="{{ route('admin.permintaan.store') }}" method="POST">
                 @csrf
                 <div class="modal-body">
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label-custom">Jenis Produk / Mesin<span class="required-star">*</span></label>
@@ -203,18 +239,20 @@
                             <label class="form-label-custom">Priority<span class="required-star">*</span></label>
                             <select name="priority" class="form-select form-control-custom" required>
                                 <option value="low"    {{ old('priority') == 'low'    ? 'selected' : '' }}>Low</option>
-                                <option value="medium" {{ old('priority','medium') == 'medium' ? 'selected' : '' }}>Medium</option>
+                                <option value="medium" {{ old('priority', 'medium') == 'medium' ? 'selected' : '' }}>Medium</option>
                                 <option value="high"   {{ old('priority') == 'high'   ? 'selected' : '' }}>High</option>
                                 <option value="urgent" {{ old('priority') == 'urgent' ? 'selected' : '' }}>Urgent</option>
                             </select>
                         </div>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label-custom">Deskripsi Kebutuhan<span class="required-star">*</span></label>
                         <textarea name="deskripsi_kebutuhan" class="form-control form-control-custom"
                                   rows="4" placeholder="Detail kebutuhan dan spesifikasi mesin..."
                                   required>{{ old('deskripsi_kebutuhan') }}</textarea>
                     </div>
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label-custom">Tanggal Permintaan<span class="required-star">*</span></label>
@@ -229,11 +267,13 @@
                                    value="{{ old('tanggal_selesai') }}">
                         </div>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label-custom">Catatan (opsional)</label>
                         <textarea name="catatan" class="form-control form-control-custom"
                                   rows="2" placeholder="Catatan tambahan...">{{ old('catatan') }}</textarea>
                     </div>
+
                 </div>
                 <div class="modal-footer d-flex justify-content-start gap-2">
                     <button type="submit" class="btn btn-primary px-4">Simpan</button>
@@ -276,7 +316,7 @@
     function showPartListing(reqId, machineName, permintaanId) {
         document.getElementById('request-management-container').style.display = 'none';
         document.getElementById('part-listing-container').style.display       = 'block';
-        document.getElementById('detail-req-id').innerText      = reqId;
+        document.getElementById('detail-req-id').innerText       = reqId;
         document.getElementById('detail-machine-name').innerText = machineName;
         loadPartList(permintaanId);
     }
@@ -302,22 +342,23 @@
             }
 
             const statusBadge = {
-                'belum_dibeli': 'status-draft',
-                'ready'       : 'status-approved',
-                'in_progress' : 'status-in_progress',
-                'selesai'     : 'status-completed',
+                'draft'        : 'status-draft',
+                'belum_dibeli' : 'status-submitted',
+                'dibeli'       : 'status-in_progress',
+                'indent'       : 'status-in_progress',
+                'ready'        : 'status-approved',
             };
 
             let rows = parts.map(p => `
                 <tr>
                     <td>${p.nama_part ?? '-'}</td>
                     <td>${p.material ?? '-'}</td>
-                    <td>${p.dimensi_finish ?? '-'}</td>
-                    <td>${p.dimensi_raw ?? '-'}</td>
-                    <td>${p.qty ?? '-'}</td>
+                    <td>${p.dimensi ?? '-'}</td>
+                    <td>${p.dimensi_belanja ?? '-'}</td>
+                    <td>${p.quantity ?? '-'} ${p.unit ?? ''}</td>
                     <td>
                         <span class="status-badge ${statusBadge[p.status_part] ?? 'status-draft'}">
-                            ${p.status_part ? p.status_part.replace('_', ' ') : '-'}
+                            ${p.status_part ? p.status_part.replace(/_/g, ' ') : '-'}
                         </span>
                     </td>
                 </tr>
@@ -329,8 +370,8 @@
                         <tr>
                             <th>PART NAME</th>
                             <th>MATERIAL</th>
-                            <th>DIMENSION FINISH</th>
-                            <th>DIMENSION RAW</th>
+                            <th>DIMENSI FINISH</th>
+                            <th>DIMENSI RAW</th>
                             <th>QTY</th>
                             <th>STATUS</th>
                         </tr>
