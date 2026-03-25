@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PartList;
 use App\Models\Permintaan;
+use App\Models\Mesin;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -26,19 +27,21 @@ class PartListController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // ✅ Fix: kirim $permintaan ke view
         $permintaan = Permintaan::with('partLists')
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // ✅ Bedakan view berdasarkan role
         $role = auth()->user()->role;
 
         if ($role === 'engineer') {
             return view('engineer.parts', compact('parts', 'permintaan'));
         }
 
-        return view('admin.planning', compact('parts', 'permintaan'));
+        // ✅ FIX: tambah $mesins yang dibutuhkan admin.planning
+        $mesins  = Mesin::orderBy('nama_mesin')->get();
+        $designers = User::where('role', 'engineer')->orderBy('nama')->get();
+
+        return view('admin.planning', compact('parts', 'permintaan', 'mesins', 'designers'));
     }
 
     /*
@@ -113,12 +116,15 @@ class PartListController extends Controller
             return view('engineer.parts-detail', compact('partList'));
         }
 
-        // ✅ Fix: kirim $permintaan agar view tidak error
         $permintaan = Permintaan::with('partLists')
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('admin.planning', compact('partList', 'permintaan'));
+        // ✅ FIX: tambah $mesins yang dibutuhkan admin.planning
+        $mesins    = Mesin::orderBy('nama_mesin')->get();
+        $designers = User::where('role', 'engineer')->orderBy('nama')->get();
+
+        return view('admin.planning', compact('partList', 'permintaan', 'mesins', 'designers'));
     }
 
     /*

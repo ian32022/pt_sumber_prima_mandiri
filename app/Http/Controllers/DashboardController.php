@@ -96,4 +96,40 @@ class DashboardController extends Controller
 
         return view('engineer.dashboard', compact('user', 'permintaan_baru', 'mesin_maintenance'));
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ENGINEER — REQUEST PAGE
+    | Menggantikan closure di web.php yang tidak pass $user
+    |--------------------------------------------------------------------------
+    */
+
+    public function engineerRequest()
+    {
+        $user = auth()->user();
+
+        $permintaan = Permintaan::with('user')
+            ->orderBy('tanggal_permintaan', 'desc')
+            ->get();
+
+        return view('engineer.request', compact('user', 'permintaan'));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ENGINEER — MASTER SCHEDULE PAGE
+    | Menggantikan closure di web.php yang tidak pass $user
+    |--------------------------------------------------------------------------
+    */
+
+    public function engineerMaster()
+    {
+        $user = auth()->user();
+
+        $schedules = Schedule::with(['mesin', 'partList'])
+            ->orderBy('tanggal_plan', 'asc')
+            ->get();
+
+        return view('engineer.master', compact('user', 'schedules'));
+    }
 }

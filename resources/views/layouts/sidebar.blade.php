@@ -53,10 +53,7 @@
                class="{{ request()->routeIs('engineer.master') ? 'active' : '' }}">
                 <i class="bi bi-table"></i> Master Schedule
             </a>
-            <a href="{{ route('engineer.parts.index') }}"
-               class="{{ request()->routeIs('engineer.parts.*') ? 'active' : '' }}">
-                <i class="bi bi-tools"></i> Part List
-            </a>
+            
 
         {{-- ── MENU OPERATOR ── --}}
         @elseif($role === 'operator')
@@ -85,9 +82,14 @@
            class="{{ request()->routeIs('profile') ? 'active' : '' }}">
             <i class="bi bi-person"></i> Profil Saya
         </a>
-        <a href="{{ route('logout') }}" class="text-danger">
+        <a href="{{ route('logout') }}" class="text-danger"
+        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
             <i class="bi bi-box-arrow-right"></i> Logout
         </a>
+
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+            @csrf
+        </form>
 
     </div>
 </div>
