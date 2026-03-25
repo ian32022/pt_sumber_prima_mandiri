@@ -8,6 +8,7 @@ use App\Http\Controllers\MesinController;
 use App\Http\Controllers\PartListController;
 use App\Http\Controllers\ProsesMfgController;
 use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\PlanningController; // ✅ TAMBAHKAN INI
 
 // Authentication Routes
 Route::get('/login',[LoginController::class,'showLogin'])->name('login');
@@ -50,7 +51,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('part-list', PartListController::class);
     Route::post('part-list/{partList}/assign', [PartListController::class, 'assignDesigner'])->name('part-list.assign');
     Route::post('part-list/{partList}/status', [PartListController::class, 'updatePartStatus'])->name('part-list.status');
-    
+
+    // ✅ Production Planning Routes
+    Route::get('planning', [PlanningController::class, 'index'])->name('planning.index');
+    Route::post('planning', [PlanningController::class, 'store'])->name('planning.store');
+    Route::get('planning/{id}', [PlanningController::class, 'show'])->name('planning.show');
+    Route::put('planning/{id}', [PlanningController::class, 'update'])->name('planning.update');
+    Route::delete('planning/{id}', [PlanningController::class, 'destroy'])->name('planning.destroy');
+
     // Schedule Overview
     Route::get('schedule', [ScheduleController::class, 'index'])->name('schedule.index');
 });
@@ -111,15 +119,15 @@ Route::middleware(['auth', 'role:operator'])->prefix('operator')->name('operator
 // Common Routes (accessible by all authenticated users)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', function () {
-        return view('profile');
+        return view('profile.profile');
     })->name('profile');
     
-    Route::put('/profile/update', function (Request $request) {
+    Route::put('/profile/update', function (\Illuminate\Http\Request $request) {
         $user = auth()->user();
         $user->update($request->only('nama', 'email'));
         
         if ($request->password) {
-            $user->update(['password_hash' => Hash::make($request->password)]);
+            $user->update(['password_hash' => \Illuminate\Support\Facades\Hash::make($request->password)]);
         }
         
         return back()->with('success', 'Profile berhasil diperbarui.');
