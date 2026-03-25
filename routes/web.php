@@ -116,7 +116,7 @@ Route::middleware(['auth', 'role:operator'])->prefix('operator')->name('operator
         $parts = \App\Models\PartList::where('status_part', 'ready')
             ->with('permintaan')
             ->get();
-        return view('machining.parts', compact('parts'));
+        return view('operator.activities', compact('parts'));
     })->name('parts');
 });
 
