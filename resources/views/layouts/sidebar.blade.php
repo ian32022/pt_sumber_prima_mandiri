@@ -32,6 +32,11 @@
                class="{{ request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
                 <i class="bi bi-tools"></i> Master Schedule
             </a>
+            <a href="{{ route('admin.users.index') }}"
+             class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                 <i class="bi bi-person-check"></i> User Management
+            </a>
+            
             
 
         {{-- ── MENU ENGINEER ── --}}

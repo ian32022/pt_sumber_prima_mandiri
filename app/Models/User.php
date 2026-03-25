@@ -25,7 +25,9 @@ class User extends Authenticatable
         'email',
         'password_hash',
         'role',
-        'last_login'
+        'last_login',
+        'jabatan',
+        'nomor_hp',
     ];
 
     // Kolom yang disembunyikan
