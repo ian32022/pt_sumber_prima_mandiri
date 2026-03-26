@@ -64,7 +64,6 @@
             </a>
             <a href="{{ route('operator.master') }}"
                class="{{ request()->routeIs('operator.master') ? 'active' : '' }}">
-                {{-- ✅ Fix: was 'operator.master.*' — route ini tidak punya child, cukup exact match --}}
                 <i class="bi bi-table"></i> Master Schedule
             </a>
             <a href="{{ route('operator.schedule.index') }}"

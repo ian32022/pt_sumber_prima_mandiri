@@ -118,6 +118,15 @@ Route::middleware(['auth', 'role:operator'])->prefix('operator')->name('operator
             ->get();
         return view('operator.activities', compact('parts'));
     })->name('parts');
+    Route::get('/master', function () {
+
+    $schedules = \App\Models\Schedule::with(['mesin', 'partList'])
+        ->latest()
+        ->get();
+
+    return view('operator.master', compact('schedules'));
+
+})->name('master');
 });
 
 // ─────────────────────────────────────────────
