@@ -79,4 +79,29 @@ class UserController extends Controller
 
         return back()->with('success', 'User berhasil dihapus.');
     }
+    public function updateProfile(Request $request)
+{
+    $user = auth()->user();
+
+    $request->validate([
+        'alamat' => 'required|string|max:255',
+        'no_hp'  => 'required|string|max:20',
+        'password' => 'nullable|min:6',
+    ]);
+
+    $data = [
+        'alamat' => $request->alamat,
+        'no_hp'  => $request->no_hp,
+    ];
+
+    // Update password kalau diisi
+    if ($request->filled('password')) {
+        $data['password_hash'] = Hash::make($request->password);
+    }
+
+    $user->update($data);
+
+    return redirect()->route('profile')
+        ->with('success', 'Profil berhasil diperbarui!');
+}
 }

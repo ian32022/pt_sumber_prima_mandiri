@@ -1,30 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Design Dashboard')
-
-@push('styles')
-<style>
-    .page-title { font-size: 24px; font-weight: 600; color: #101828; }
-    .page-subtitle { color: #475467; font-size: 14px; }
-    .stat-card { background: white; border: 1px solid #eaecf0; border-radius: 12px; padding: 24px; height: 100%; display: flex; justify-content: space-between; align-items: start; }
-    .stat-title { font-size: 14px; color: #475467; font-weight: 500; margin-bottom: 8px; }
-    .stat-value { font-size: 30px; font-weight: 600; color: #101828; }
-    .icon-box { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-    .icon-blue   { background-color: #eff8ff; color: #2F6BFF; }
-    .icon-yellow { background-color: #fffaeb; color: #b54708; }
-    .icon-green  { background-color: #ecfdf3; color: #027a48; }
-    .content-card { background: white; border: 1px solid #eaecf0; border-radius: 12px; padding: 24px; margin-top: 24px; }
-    .table thead th { font-size: 12px; color: #475467; font-weight: 600; background-color: #F9FAFB; border-bottom: 1px solid #eaecf0; padding: 12px 24px; text-transform: uppercase; }
-    .table tbody td { padding: 16px 24px; color: #101828; font-size: 14px; vertical-align: middle; border-bottom: 1px solid #eaecf0; }
-    .request-id { color: #2F6BFF; font-weight: 500; text-decoration: none; }
-    .status-badge { padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; background-color: #F2F4F7; color: #344054; }
-    .action-link { color: #2F6BFF; text-decoration: none; font-weight: 500; }
-    .action-link:hover { text-decoration: underline; }
-</style>
-@endpush
+@section('title', 'Design Dashboard - PT Sumber Prima Mandiri')
 
 @section('content')
-
 <div class="page-header mb-4">
     <h2 class="page-title">Design Dashboard</h2>
     <p class="page-subtitle">Engineering & BOM Management — {{ now()->translatedFormat('d F Y') }}</p>
@@ -86,12 +64,8 @@
                     <td>{{ $p->nama_permintaan ?? '-' }}</td>
                     <td>{{ $p->user->nama ?? '-' }}</td>
                     <td>{{ \Carbon\Carbon::parse($p->tanggal_permintaan)->format('d M Y') }}</td>
-                    <td><span class="status-badge">{{ $p->status }}</span></td>
-                    <td>
-                        <a href="{{ route('engineer.parts.show', $p->permintaan_id) }}" class="action-link">
-                            Lihat Detail
-                        </a>
-                    </td>
+                    <td><span class="status-badge status-blue">{{ $p->status }}</span></td>
+                    <td><a href="{{ route('engineer.parts.show', $p->permintaan_id) }}" class="action-link">Lihat Detail</a></td>
                 </tr>
                 @empty
                 <tr>
@@ -124,7 +98,7 @@
                 <tr>
                     <td>{{ $mesin->kode_mesin ?? '-' }}</td>
                     <td>{{ $mesin->nama_mesin ?? '-' }}</td>
-                    <td><span class="status-badge" style="background:#fff3cd;color:#856404;">Maintenance</span></td>
+                    <td><span class="status-badge status-yellow">Maintenance</span></td>
                 </tr>
                 @endforeach
             </tbody>
@@ -132,12 +106,11 @@
     </div>
 </div>
 @endif
-
 @endsection
 
 @push('scripts')
 <script>
-    document.getElementById('requestTable')?.addEventListener('keyup', function() {
+    document.getElementById('searchInput')?.addEventListener('keyup', function() {
         let input = this.value.toLowerCase();
         document.querySelectorAll('#requestTable tbody tr').forEach(row => {
             row.style.display = row.innerText.toLowerCase().includes(input) ? '' : 'none';

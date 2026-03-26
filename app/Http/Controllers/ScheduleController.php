@@ -39,6 +39,37 @@ class ScheduleController extends Controller
 
     /*
     |--------------------------------------------------------------------------
+    | MASTER INDEX — Tampilkan halaman master data (operator)
+    |--------------------------------------------------------------------------
+    | Route: GET /operator/master
+    | Route name: operator.master
+    |--------------------------------------------------------------------------
+    */
+    public function masterIndex()
+    {
+        $user = auth()->user();
+
+        $schedules = Schedule::with(['mesin', 'partList', 'picUser'])
+            ->where('pic', $user->user_id)
+            ->orderBy('tanggal_plan', 'asc')
+            ->get();
+
+        $mesins     = Mesin::where('status', 'active')->get();
+        $partLists  = PartList::all();
+        $operators  = User::where('role', 'operator')->get();
+        $proses_mfg = ProsesMfg::all();
+
+        return view('operator.master', compact(
+            'schedules',
+            'mesins',
+            'partLists',
+            'operators',
+            'proses_mfg'
+        ));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | CREATE — Form buat schedule baru
     |--------------------------------------------------------------------------
     */
@@ -47,7 +78,6 @@ class ScheduleController extends Controller
         $part      = $partlist_id ? PartList::find($partlist_id) : null;
         $mesins    = Mesin::where('status', 'active')->get();
 
-        // ✅ Fix: role 'machining' tidak ada, yang benar adalah 'operator'
         $machinings = User::where('role', 'operator')->get();
 
         $proses_mfg = $partlist_id
@@ -92,7 +122,6 @@ class ScheduleController extends Controller
             $prosesMfg->update(['status' => 'pending']);
         }
 
-        // ✅ Fix: route name disesuaikan (admin atau operator)
         $redirectRoute = auth()->user()->role === 'admin'
             ? 'admin.schedule.index'
             : 'operator.schedule.index';

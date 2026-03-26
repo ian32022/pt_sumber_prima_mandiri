@@ -33,11 +33,9 @@
                 <i class="bi bi-tools"></i> Master Schedule
             </a>
             <a href="{{ route('admin.users.index') }}"
-             class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                 <i class="bi bi-person-check"></i> User Management
+               class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                <i class="bi bi-person-check"></i> User Management
             </a>
-            
-            
 
         {{-- ── MENU ENGINEER ── --}}
         @elseif($role === 'engineer')
@@ -53,7 +51,6 @@
                class="{{ request()->routeIs('engineer.master') ? 'active' : '' }}">
                 <i class="bi bi-table"></i> Master Schedule
             </a>
-            
 
         {{-- ── MENU OPERATOR ── --}}
         @elseif($role === 'operator')
@@ -65,8 +62,9 @@
                class="{{ request()->routeIs('operator.parts') ? 'active' : '' }}">
                 <i class="bi bi-file-text"></i> Request Management
             </a>
-            <a href="{{ route('operator.schedule.index') }}"
-               class="{{ request()->routeIs('operator.schedule.*') ? 'active' : '' }}">
+            <a href="{{ route('operator.master') }}"
+               class="{{ request()->routeIs('operator.master') ? 'active' : '' }}">
+                {{-- ✅ Fix: was 'operator.master.*' — route ini tidak punya child, cukup exact match --}}
                 <i class="bi bi-table"></i> Master Schedule
             </a>
             <a href="{{ route('operator.schedule.index') }}"
@@ -83,7 +81,7 @@
             <i class="bi bi-person"></i> Profil Saya
         </a>
         <a href="{{ route('logout') }}" class="text-danger"
-        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
             <i class="bi bi-box-arrow-right"></i> Logout
         </a>
 

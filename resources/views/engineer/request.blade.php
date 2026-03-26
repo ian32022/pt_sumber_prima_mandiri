@@ -1,63 +1,27 @@
 @extends('layouts.app')
 
-@section('title', 'Request Management')
-
-@push('styles')
-<style>
-    .page-title { font-size: 24px; font-weight: 600; color: #101828; margin-bottom: 8px; }
-    .page-subtitle { color: #475467; font-size: 14px; }
-    .content-card { background: white; border: 1px solid #eaecf0; border-radius: 12px; padding: 24px; }
-    .table thead th { font-size: 12px; color: #475467; font-weight: 600; background-color: #F9FAFB; border-bottom: 1px solid #eaecf0; padding: 12px 16px; text-transform: uppercase; }
-    .table tbody td { padding: 16px 16px; color: #101828; font-size: 14px; vertical-align: middle; border-bottom: 1px solid #eaecf0; }
-    .status-badge { padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; }
-    .status-blue   { background-color: #eff8ff; color: #2F6BFF; }
-    .status-yellow { background-color: #fffaeb; color: #b54708; }
-    .btn-add-parts-link { color: #2F6BFF; text-decoration: none; font-weight: 500; cursor: pointer; }
-    .btn-add-parts-link:hover { text-decoration: underline; }
-    .btn-primary-custom { background-color: #2F6BFF; border-color: #2F6BFF; color: white; font-weight: 500; }
-    .btn-primary-custom:hover { background-color: #1e5afa; }
-    .btn-success-custom { background-color: #12B76A; border-color: #12B76A; color: white; font-weight: 500; }
-    .btn-outline-custom { border: 1px solid #d0d5dd; color: #344054; background: white; font-weight: 500; }
-    .form-label { font-weight: 500; font-size: 14px; color: #344054; }
-    .form-control, .form-select { border-radius: 8px; border: 1px solid #d0d5dd; padding: 10px 14px; }
-    .required-star { color: #F04438; margin-left: 4px; }
-    .back-link { color: #475467; text-decoration: none; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 16px; cursor: pointer; }
-    .back-link:hover { color: #2F6BFF; }
-    .action-icon-btn { border: none; background: none; padding: 4px 8px; cursor: pointer; transition: color 0.2s; }
-    .edit-icon { color: #2F6BFF; }
-    .view-icon { color: #12B76A; }
-    .delete-icon { color: #F04438; }
-    .action-icon-btn:hover { opacity: 0.7; }
-    .custom-toast { border-left: 4px solid #12B76A; }
-    .view-section { display: none; }
-    .view-section.active { display: block; }
-</style>
-@endpush
+@section('title', 'Request Management - PT Sumber Prima Mandiri')
 
 @section('content')
 
-{{-- ══════════════════════════════════════
-     VIEW 1: REQUEST LIST
-══════════════════════════════════════ --}}
+{{-- VIEW: REQUEST LIST --}}
 <div id="view-request-list" class="view-section active">
     <div class="mb-4">
         <h2 class="page-title">Request Management</h2>
         <p class="page-subtitle">View requests and add part listing</p>
     </div>
-
-    <div class="content-card">
+    <div class="content-card mt-0">
         <div class="d-flex justify-content-between mb-4">
-            <div class="position-relative" style="width: 300px;">
+            <div class="position-relative" style="width:300px;">
                 <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                 <input type="text" class="form-control ps-5" placeholder="Search by ID or machine name...">
             </div>
-            <select class="form-select" style="width: 150px;">
+            <select class="form-select" style="width:150px;">
                 <option selected>All Status</option>
                 <option>Waiting for Part</option>
                 <option>Completed</option>
             </select>
         </div>
-
         <div class="table-responsive">
             <table class="table align-middle">
                 <thead>
@@ -72,42 +36,37 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($permintaan as $p)
                     <tr>
-                        <td class="fw-medium">{{ $p->kode_permintaan ?? 'REQ-'.$p->permintaan_id }}</td>
+                        <td class="fw-medium">REQ-2025-001</td>
                         <td>
-                            <div class="fw-medium">{{ $p->nama_permintaan ?? '-' }}</div>
-                            <small class="text-muted">{{ $p->deskripsi ?? '' }}</small>
+                            <div class="fw-medium">Custom Gear Box Machine</div>
+                            <small class="text-muted">Mesin gear box untuk packaging line</small>
                         </td>
-                        <td>{{ $p->qty ?? '-' }}</td>
-                        <td>{{ $p->tanggal_permintaan ? \Carbon\Carbon::parse($p->tanggal_permintaan)->format('d/m/Y') : '-' }}</td>
-                        <td>{{ $p->partLists->count() ?? 0 }} parts</td>
-                        <td>
-                            <span class="status-badge {{ $p->status === 'submitted' ? 'status-yellow' : 'status-blue' }}">
-                                {{ $p->status }}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="btn-add-parts-link"
-                                  onclick="navigate.toPartList('{{ $p->kode_permintaan ?? 'REQ-'.$p->permintaan_id }}')">
-                                + Add Parts
-                            </span>
-                        </td>
+                        <td>2 unit</td>
+                        <td>15/2/2025</td>
+                        <td>4 parts</td>
+                        <td><span class="status-badge status-blue">Part Listing Completed</span></td>
+                        <td><span class="btn-add-parts-link" onclick="navigate.toPartList('REQ-2025-001')">+ Add Parts</span></td>
                     </tr>
-                    @empty
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">Tidak ada permintaan saat ini.</td>
+                        <td class="fw-medium">REQ-2025-002</td>
+                        <td>
+                            <div class="fw-medium">Conveyor Belt System</div>
+                            <small class="text-muted">System conveyor dengan panjang 10 meter</small>
+                        </td>
+                        <td>1 unit</td>
+                        <td>28/2/2025</td>
+                        <td>0 parts</td>
+                        <td><span class="status-badge status-yellow">Waiting for Part Listing</span></td>
+                        <td><span class="btn-add-parts-link" onclick="navigate.toPartList('REQ-2025-002')">+ Add Parts</span></td>
                     </tr>
-                    @endforelse
                 </tbody>
             </table>
         </div>
     </div>
 </div>
 
-{{-- ══════════════════════════════════════
-     VIEW 2: PART LIST
-══════════════════════════════════════ --}}
+{{-- VIEW: PART LIST --}}
 <div id="view-part-list" class="view-section">
     <div onclick="navigate.toRequestList()" class="back-link">
         <i class="bi bi-arrow-left"></i> Back to Request Management
@@ -118,7 +77,7 @@
         <div class="text-muted">Machine: <span class="fw-medium text-dark" id="pl-machine-name"></span></div>
         <small class="text-muted">Define what will be produced - parts, materials, and dimensions</small>
     </div>
-    <div class="content-card">
+    <div class="content-card mt-0">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h5 class="fw-bold mb-0">Part List (<span id="part-count">0</span> parts)</h5>
             <button class="btn btn-primary-custom" onclick="navigate.toAddPartForm()">
@@ -147,9 +106,7 @@
     </div>
 </div>
 
-{{-- ══════════════════════════════════════
-     VIEW 3: ADD PART FORM
-══════════════════════════════════════ --}}
+{{-- VIEW: ADD PART --}}
 <div id="view-add-part" class="view-section">
     <div onclick="navigate.toPartList()" class="back-link">
         <i class="bi bi-arrow-left"></i> Back to Part Listing
@@ -161,16 +118,16 @@
             Machine: <span class="fw-medium text-dark" id="ap-machine-name"></span>
         </div>
     </div>
-    <div class="alert alert-primary d-flex align-items-center"
-         style="background-color: #F5F8FF; border-color: #D0D5DD;">
-        <i class="bi bi-info-circle-fill text-primary me-3 fs-5"></i>
+    <div class="alert alert-info-custom d-flex align-items-center gap-3">
+        <i class="bi bi-info-circle-fill fs-5"></i>
         <div>
-            <div class="fw-medium" style="color: #1d2939;">Design Team - Part Entry</div>
-            <div class="small" style="color: #475467;">Enter part specifications including material and dimensions.</div>
+            <div class="fw-medium">Design Team - Part Entry</div>
+            <div class="small">Enter part specifications including material and dimensions.</div>
         </div>
     </div>
-    <div class="content-card">
+    <div class="content-card mt-0">
         <h5 class="fw-bold mb-4">Part Details</h5>
+        <p class="text-muted small mb-4">Enter part specifications</p>
         <form id="addPartForm">
             <div class="mb-3">
                 <label class="form-label">Part Name<span class="required-star">*</span></label>
@@ -206,7 +163,7 @@
     </div>
 </div>
 
-{{-- Edit Modal --}}
+{{-- MODAL: EDIT PART --}}
 <div class="modal fade" id="editPartModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -253,7 +210,7 @@
     </div>
 </div>
 
-{{-- View Modal --}}
+{{-- MODAL: VIEW PART --}}
 <div class="modal fade" id="viewPartModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content p-3">
@@ -262,13 +219,31 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body pt-4">
-                <div class="row g-4 mb-4">
-                    <div class="col-6"><div class="text-muted small">Part Name</div><div class="fw-medium fs-5" id="view-partName"></div></div>
-                    <div class="col-6"><div class="text-muted small">Material</div><div class="fw-medium fs-5" id="view-material"></div></div>
-                    <div class="col-6"><div class="text-muted small">Dimension Finish</div><div class="fw-medium fs-5" id="view-dimFinish"></div></div>
-                    <div class="col-6"><div class="text-muted small">Dimension Raw</div><div class="fw-medium fs-5" id="view-dimRaw"></div></div>
-                    <div class="col-12"><div class="text-muted small">Quantity</div><div class="fw-medium fs-5" id="view-quantity"></div></div>
-                    <div class="col-12"><div class="text-muted small">Notes</div><div class="fw-medium" id="view-notes"></div></div>
+                <div class="row g-4">
+                    <div class="col-6">
+                        <div class="text-muted small">Part Name</div>
+                        <div class="fw-medium fs-5" id="view-partName"></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted small">Material</div>
+                        <div class="fw-medium fs-5" id="view-material"></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted small">Dimension Finish</div>
+                        <div class="fw-medium fs-5" id="view-dimFinish"></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted small">Dimension Raw</div>
+                        <div class="fw-medium fs-5" id="view-dimRaw"></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="text-muted small">Quantity</div>
+                        <div class="fw-medium fs-5" id="view-quantity"></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="text-muted small">Notes</div>
+                        <div class="fw-medium" id="view-notes"></div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer border-0 p-0 pb-3 pe-3">
@@ -278,7 +253,7 @@
     </div>
 </div>
 
-{{-- Toast --}}
+{{-- TOAST --}}
 <div class="toast-container position-fixed top-0 end-0 p-3">
     <div id="successToast" class="toast custom-toast align-items-center bg-white" role="alert" data-bs-delay="5000">
         <div class="d-flex p-2">
@@ -299,14 +274,18 @@
 @push('scripts')
 <script>
     const requestsData = {
-        @foreach($permintaan as $p)
-        '{{ $p->kode_permintaan ?? 'REQ-'.$p->permintaan_id }}': {
-            machineName: '{{ addslashes($p->nama_permintaan ?? '-') }}'
-        },
-        @endforeach
+        'REQ-2025-001': { machineName: 'Custom Gear Box Machine' },
+        'REQ-2025-002': { machineName: 'Conveyor Belt System' }
     };
 
-    let partsStorage = {};
+    let partsStorage = {
+        'REQ-2025-001': [
+            { id: 101, name: 'Gear Shaft', material: 'SCM 440', dimFinish: 'Ø50 x 200', dimRaw: 'Ø55 x 210', qty: 2, notes: 'Heat treatment required' },
+            { id: 102, name: 'Bearing Housing', material: 'SS 304', dimFinish: '100 x 100 x 50', dimRaw: '110 x 110 x 55', qty: 4, notes: 'Precision machining' },
+        ],
+        'REQ-2025-002': []
+    };
+
     let currentState = { requestId: null };
 
     const editModal    = new bootstrap.Modal(document.getElementById('editPartModal'));
@@ -314,25 +293,24 @@
     const successToast = new bootstrap.Toast(document.getElementById('successToast'));
 
     const navigate = {
-        toRequestList: function() {
+        toRequestList() {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.getElementById('view-request-list').classList.add('active');
             currentState.requestId = null;
         },
-        toPartList: function(requestId) {
+        toPartList(requestId) {
             if (requestId) currentState.requestId = requestId;
-            const reqInfo = requestsData[currentState.requestId] || { machineName: '-' };
-            document.getElementById('pl-request-id').textContent   = currentState.requestId;
-            document.getElementById('pl-machine-name').textContent = reqInfo.machineName;
-            if (!partsStorage[currentState.requestId]) partsStorage[currentState.requestId] = [];
+            const req = requestsData[currentState.requestId];
+            document.getElementById('pl-request-id').textContent  = currentState.requestId;
+            document.getElementById('pl-machine-name').textContent = req.machineName;
             renderPartsTable();
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.getElementById('view-part-list').classList.add('active');
         },
-        toAddPartForm: function() {
-            const reqInfo = requestsData[currentState.requestId] || { machineName: '-' };
-            document.getElementById('ap-request-id').textContent   = currentState.requestId;
-            document.getElementById('ap-machine-name').textContent = reqInfo.machineName;
+        toAddPartForm() {
+            const req = requestsData[currentState.requestId];
+            document.getElementById('ap-request-id').textContent  = currentState.requestId;
+            document.getElementById('ap-machine-name').textContent = req.machineName;
             document.getElementById('addPartForm').reset();
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.getElementById('view-add-part').classList.add('active');
@@ -343,42 +321,37 @@
         const tbody = document.querySelector('#parts-table tbody');
         const parts = partsStorage[currentState.requestId] || [];
         document.getElementById('part-count').textContent = parts.length;
-        if (parts.length === 0) {
+        if (!parts.length) {
             tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No parts added yet.</td></tr>';
             return;
         }
-        tbody.innerHTML = '';
-        parts.forEach(part => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="fw-medium">${part.name}</td>
-                <td>${part.material}</td>
-                <td>${part.dimFinish}</td>
-                <td>${part.dimRaw}</td>
-                <td>${part.qty}</td>
-                <td>${part.notes}</td>
+        tbody.innerHTML = parts.map(p => `
+            <tr>
+                <td class="fw-medium">${p.name}</td>
+                <td>${p.material}</td>
+                <td>${p.dimFinish}</td>
+                <td>${p.dimRaw}</td>
+                <td>${p.qty}</td>
+                <td>${p.notes}</td>
                 <td>
-                    <button class="action-icon-btn edit-icon" onclick="openEditModal(${part.id})" title="Edit"><i class="bi bi-pencil-fill"></i></button>
-                    <button class="action-icon-btn view-icon" onclick="openViewModal(${part.id})" title="View"><i class="bi bi-eye-fill"></i></button>
-                    <button class="action-icon-btn delete-icon" onclick="deletePart(${part.id})" title="Delete"><i class="bi bi-trash-fill"></i></button>
-                </td>`;
-            tbody.appendChild(tr);
-        });
+                    <button class="action-icon-btn edit-icon"   onclick="openEditModal(${p.id})"><i class="bi bi-pencil-fill"></i></button>
+                    <button class="action-icon-btn view-icon"   onclick="openViewModal(${p.id})"><i class="bi bi-eye-fill"></i></button>
+                    <button class="action-icon-btn delete-icon" onclick="deletePart(${p.id})"><i class="bi bi-trash-fill"></i></button>
+                </td>
+            </tr>`).join('');
     }
 
     document.getElementById('addPartForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        const newPart = {
+        partsStorage[currentState.requestId].push({
             id: Date.now(),
-            name: document.getElementById('add-partName').value,
-            material: document.getElementById('add-material').value,
+            name:      document.getElementById('add-partName').value,
+            material:  document.getElementById('add-material').value,
             dimFinish: document.getElementById('add-dimFinish').value,
-            dimRaw: document.getElementById('add-dimRaw').value,
-            qty: document.getElementById('add-quantity').value,
-            notes: document.getElementById('add-notes').value
-        };
-        if (!partsStorage[currentState.requestId]) partsStorage[currentState.requestId] = [];
-        partsStorage[currentState.requestId].push(newPart);
+            dimRaw:    document.getElementById('add-dimRaw').value,
+            qty:       document.getElementById('add-quantity').value,
+            notes:     document.getElementById('add-notes').value
+        });
         navigate.toPartList();
     });
 
@@ -390,62 +363,55 @@
     }
 
     function openViewModal(partId) {
-        const part = (partsStorage[currentState.requestId] || []).find(p => p.id === partId);
-        if (!part) return;
-        document.getElementById('view-partName').textContent  = part.name;
-        document.getElementById('view-material').textContent  = part.material;
-        document.getElementById('view-dimFinish').textContent = part.dimFinish;
-        document.getElementById('view-dimRaw').textContent    = part.dimRaw;
-        document.getElementById('view-quantity').textContent  = part.qty;
-        document.getElementById('view-notes').textContent     = part.notes || '-';
+        const p = partsStorage[currentState.requestId].find(p => p.id === partId);
+        if (!p) return;
+        document.getElementById('view-partName').textContent  = p.name;
+        document.getElementById('view-material').textContent  = p.material;
+        document.getElementById('view-dimFinish').textContent = p.dimFinish;
+        document.getElementById('view-dimRaw').textContent    = p.dimRaw;
+        document.getElementById('view-quantity').textContent  = p.qty;
+        document.getElementById('view-notes').textContent     = p.notes || '-';
         viewModal.show();
     }
 
     function openEditModal(partId) {
-        const part = (partsStorage[currentState.requestId] || []).find(p => p.id === partId);
-        if (!part) return;
-        document.getElementById('edit-partId').value    = part.id;
-        document.getElementById('edit-partName').value  = part.name;
-        document.getElementById('edit-material').value  = part.material;
-        document.getElementById('edit-dimFinish').value = part.dimFinish;
-        document.getElementById('edit-dimRaw').value    = part.dimRaw;
-        document.getElementById('edit-quantity').value  = part.qty;
-        document.getElementById('edit-notes').value     = part.notes;
+        const p = partsStorage[currentState.requestId].find(p => p.id === partId);
+        if (!p) return;
+        document.getElementById('edit-partId').value    = p.id;
+        document.getElementById('edit-partName').value  = p.name;
+        document.getElementById('edit-material').value  = p.material;
+        document.getElementById('edit-dimFinish').value = p.dimFinish;
+        document.getElementById('edit-dimRaw').value    = p.dimRaw;
+        document.getElementById('edit-quantity').value  = p.qty;
+        document.getElementById('edit-notes').value     = p.notes;
         editModal.show();
     }
 
     function saveEditedPart() {
         const form = document.getElementById('editPartForm');
         if (!form.checkValidity()) { form.reportValidity(); return; }
-        const partId = parseInt(document.getElementById('edit-partId').value);
-        const idx = partsStorage[currentState.requestId].findIndex(p => p.id === partId);
+        const id  = parseInt(document.getElementById('edit-partId').value);
+        const idx = partsStorage[currentState.requestId].findIndex(p => p.id === id);
         if (idx !== -1) {
             partsStorage[currentState.requestId][idx] = {
-                id: partId,
-                name: document.getElementById('edit-partName').value,
-                material: document.getElementById('edit-material').value,
+                id,
+                name:      document.getElementById('edit-partName').value,
+                material:  document.getElementById('edit-material').value,
                 dimFinish: document.getElementById('edit-dimFinish').value,
-                dimRaw: document.getElementById('edit-dimRaw').value,
-                qty: document.getElementById('edit-quantity').value,
-                notes: document.getElementById('edit-notes').value
+                dimRaw:    document.getElementById('edit-dimRaw').value,
+                qty:       document.getElementById('edit-quantity').value,
+                notes:     document.getElementById('edit-notes').value
             };
             editModal.hide();
             renderPartsTable();
         }
     }
 
-    function submitToAdmin() {
-        successToast.show();
-    }
+    function submitToAdmin() { successToast.show(); }
 
     document.addEventListener('DOMContentLoaded', function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const requestId = urlParams.get('id');
-        if (requestId) {
-            navigate.toPartList(requestId);
-        } else {
-            navigate.toRequestList();
-        }
+        const id = new URLSearchParams(window.location.search).get('id');
+        id ? navigate.toPartList(id) : navigate.toRequestList();
     });
 </script>
 @endpush
