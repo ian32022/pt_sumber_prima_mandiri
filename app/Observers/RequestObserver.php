@@ -10,12 +10,6 @@ class RequestObserver
 {
     public function created(Permintaan $request)
     {
-        $request->load('user');
-
-        $admins = User::where('role_name', 'admin')->get();
-
-        foreach ($admins as $admin) {
-            $admin->notify(new RequestNotification($request));
-        }
+       
     }
 }
