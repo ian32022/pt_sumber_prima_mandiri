@@ -1,5 +1,4 @@
 <div class="sidebar">
-//sidebar.blade.php
     <div class="sidebar-header">
         <div class="sidebar-logo">
             <img src="{{ asset('images/logo-pt-sumber-prima-mandiri.png') }}" alt="logo">

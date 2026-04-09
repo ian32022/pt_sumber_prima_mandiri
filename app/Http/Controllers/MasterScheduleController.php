@@ -18,7 +18,7 @@ class MasterScheduleController extends Controller
             'mesin',
             'mesin.permintaan',
             'partList',
-        ])->orderBy('tanggal_plan', 'asc');
+        ])->orderBy('tanggal_planning', 'asc');
 
         // Filter by status jika ada
         if ($request->filled('status')) {
@@ -49,13 +49,13 @@ class MasterScheduleController extends Controller
             'partlist_id'   => 'nullable|exists:part_list,partlist_id',
             'nama_activity' => 'required|string|max:255',
             'pic'           => 'required|string|max:100',
-            'tanggal_plan'  => 'required|date',
+            'tanggal_actual'  => 'required|date',
             'status'        => 'required|in:pending,running,completed',
         ], [
             'mesin_id.required'      => 'Mesin wajib dipilih.',
             'nama_activity.required' => 'Nama activity wajib diisi.',
             'pic.required'           => 'PIC wajib diisi.',
-            'tanggal_plan.required'  => 'Tanggal plan wajib diisi.',
+            'tanggal_actual.required'  => 'Tanggal actual wajib diisi.',
         ]);
 
         ProsesMfg::create([
@@ -63,7 +63,7 @@ class MasterScheduleController extends Controller
             'partlist_id'  => $request->partlist_id ?? null,
             'proses_nama'  => $request->nama_activity,
             'pic'          => $request->pic,
-            'tanggal_plan' => $request->tanggal_plan,
+            'tanggal_actual' => $request->tanggal_actual,
             'status'       => $request->status,
         ]);
 
@@ -85,18 +85,17 @@ public function update(Request $request, $id)
 {
     $proses = ProsesMfg::where('mfg_id', $id)->firstOrFail();
     $request->validate([
-        'nama_activity' => 'required|string|max:255',
-        'pic'           => 'required|string|max:100',
-        'tanggal_plan'  => 'required|date',
+        'nama_activity'    => 'required|string|max:255',
+        'pic'              => 'required|string|max:100',
+        'tanggal_planning' => 'required|date',
     ]);
     $proses->update([
-        'proses_nama'  => $request->nama_activity,
-        'pic'          => $request->pic,
-        'tanggal_plan' => $request->tanggal_plan,
+        'proses_nama'      => $request->nama_activity,
+        'pic'              => $request->pic,
+        'tanggal_planning' => $request->tanggal_planning,
     ]);
     return back()->with('success', 'Activity berhasil diperbarui.');
 }
-
 public function destroy($id)
 {
     ProsesMfg::where('mfg_id', $id)->firstOrFail()->delete();

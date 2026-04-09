@@ -155,10 +155,10 @@
 
 @push('scripts')
 <script>
-    const activities = {
-        'MC': { code: 'MC', machine: 'CNC Milling 01', activity: 'CNC Milling 01 - Gear Shaft' },
-        'HT': { code: 'HT', machine: 'Heat Treatment', activity: 'Heat Treatment Furnace - Gear Shaft' }
-    };
+    function showList() {
+        document.getElementById('view-schedule-detail').classList.remove('active');
+        document.getElementById('view-schedule-list').classList.add('active');
+    }
 
     function showDetail(code) {
         const data = activities[code];

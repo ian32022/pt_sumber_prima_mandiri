@@ -6,11 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-public function up(): void
+    /**
+     * Run the migrations.
+     */
+   public function up(): void
 {
     Schema::table('proses_mfg', function (Blueprint $table) {
-        if (!Schema::hasColumn('proses_mfg', 'tanggal_actual')) {
-            $table->date('tanggal_actual')->nullable();
+        if (!Schema::hasColumn('proses_mfg', 'tanggal_planning')) {
+            $table->date('tanggal_planning')->nullable()->after('pic');
         }
     });
 }
@@ -18,7 +21,7 @@ public function up(): void
 public function down(): void
 {
     Schema::table('proses_mfg', function (Blueprint $table) {
-        $table->dropColumn('tanggal_actual');
+        $table->dropColumn('tanggal_planning');
     });
 }
 };

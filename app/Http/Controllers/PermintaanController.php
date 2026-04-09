@@ -84,21 +84,38 @@ public function approve(Permintaan $permintaan)
         return back()->with('error', 'Permintaan ini tidak bisa disetujui.');
     }
 
-    $permintaan->update(['status' => 'approved']);
+    DB::transaction(function () use ($permintaan) {
+        // 1. Update Status Permintaan
+        $permintaan->update([
+            'status' => 'approved',
+            'approved_by' => auth()->id(),
+            'approved_at' => now()
+        ]);
 
-    // Otomatis buat mesin terkait permintaan ini
-    \App\Models\Mesin::firstOrCreate(
-        ['permintaan_id' => $permintaan->permintaan_id],
-        [
-            'kode_mesin'   => 'M-' . $permintaan->nomor_permintaan,
-            'nama_mesin'   => $permintaan->jenis_produk,
-            'jenis_proses' => 'umum',
-            'lokasi'       => '-',
-            'status'       => 'active',
-        ]
-    );
+        // 2. Otomatis Buat Entry di Production Planning (Draft)
+        \App\Models\ProductionPlanning::create([
+            'permintaan_id' => $permintaan->permintaan_id,
+            'nama_planning' => 'Plan: ' . $permintaan->jenis_produk,
+            'tanggal_mulai' => now(),
+            'tanggal_selesai' => $permintaan->tanggal_selesai ?? now()->addDays(7),
+            'status'        => 'draft',
+            'created_by'    => auth()->id(),
+        ]);
 
-    return back()->with('success', "Permintaan {$permintaan->nomor_permintaan} berhasil disetujui.");
+        // 3. Pastikan Mesin Terdaftar (Sesuai kodingan Anda sebelumnya)
+        \App\Models\Mesin::firstOrCreate(
+            ['permintaan_id' => $permintaan->permintaan_id],
+            [
+                'kode_mesin'   => 'M-' . $permintaan->nomor_permintaan,
+                'nama_mesin'   => $permintaan->jenis_produk,
+                'jenis_proses' => 'umum',
+                'lokasi'       => '-',
+                'status'       => 'active',
+            ]
+        );
+    });
+
+    return back()->with('success', "Permintaan {$permintaan->nomor_permintaan} disetujui. Silakan lanjut ke penambahan Part.");
 }
 
     /*

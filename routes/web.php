@@ -101,6 +101,7 @@ Route::middleware(['auth', 'role:engineer'])->prefix('engineer')->name('engineer
         }
         return back()->with('error', 'Anda tidak berhak mengakses part ini.');
     })->name('parts.accept');
+    
 });
 
 // ─────────────────────────────────────────────
@@ -109,7 +110,7 @@ Route::middleware(['auth', 'role:engineer'])->prefix('engineer')->name('engineer
 Route::middleware(['auth', 'role:operator'])->prefix('operator')->name('operator.')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'operator'])->name('dashboard');
-
+    
     // Schedule Management
     Route::get('schedule',                       [ScheduleController::class, 'index'])->name('schedule.index');
     Route::get('schedule/create/{partlist_id?}', [ScheduleController::class, 'create'])->name('schedule.create');
@@ -133,6 +134,8 @@ Route::middleware(['auth', 'role:operator'])->prefix('operator')->name('operator
     return view('operator.master', compact('schedules'));
 
 })->name('master');
+    Route::get('activity-detail/{status}', [ScheduleController::class, 'activityDetail'])
+    ->name('activity.detail');
 });
 
 // ─────────────────────────────────────────────

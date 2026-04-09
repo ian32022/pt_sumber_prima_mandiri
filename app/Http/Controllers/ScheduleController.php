@@ -211,4 +211,19 @@ class ScheduleController extends Controller
 
         return back()->with('success', 'Schedule berhasil diselesaikan.');
     }
+    public function activityDetail($status)
+{
+    if ($status == 'act') {
+        $status = 'in_progress';
+    } elseif ($status == 'done') {
+        $status = 'completed';
+    }
+
+    $data = Schedule::where('status', $status)
+        ->with(['mesin', 'partList'])
+        ->get();
+
+    return view('operator.schedulemfg.activity-details', compact('data'));
+}
+
 }

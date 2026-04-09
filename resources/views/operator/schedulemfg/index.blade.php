@@ -310,12 +310,12 @@ Manufacturing Process Execution - Source: Excel schedule (6)
 Plan
 </div>
 
-<div onclick="setStatus('act')">
-Act (In Progress)
+<div onclick="window.location.href='{{ route('operator.activity.detail', 'act') }}'">
+    Act (In Progress)
 </div>
 
-<div onclick="setStatus('done')">
-Done (Completed)
+<div onclick="window.location.href='{{ route('operator.activity.detail', 'done') }}'">
+    Done (Completed)
 </div>
 
 </div>

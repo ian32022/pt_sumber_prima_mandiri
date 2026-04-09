@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use App\Models\Permintaan;
 use App\Models\Mesin;
 use App\Models\ProsesMfg;
@@ -17,41 +19,43 @@ class DashboardController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function admin()
-    {
-        $user = auth()->user();
+    // app/Http/Controllers/DashboardController.php
 
-        $data = [
-            // Statistik permintaan
-            'total_permintaan'      => Permintaan::count(),
-            'permintaan_pending'    => Permintaan::where('status', 'draft')->count(),
-            'permintaan_inprogress' => Permintaan::where('status', 'in_progress')->count(),
+public function admin()
+{
+    $user = auth()->user();
 
-            // Statistik mesin
-            'mesin_aktif'       => Mesin::where('status', 'active')->count(),
-            'mesin_maintenance' => Mesin::where('status', 'maintenance')->count(),
+    $data = [
+        // Statistik Permintaan (Sesuai Migration Permintaan)
+        'total_permintaan'      => \App\Models\Permintaan::count(),
+        'permintaan_pending'    => \App\Models\Permintaan::where('status', 'submitted')->count(), // Menunggu Approval
+        'permintaan_inprogress' => \App\Models\Permintaan::where('status', 'approved')->count(),
 
-            // Statistik proses & schedule
-            'proses_running' => ProsesMfg::where('status', 'running')->count(),
-            'schedule_today' => Schedule::whereDate('tanggal_plan', today())->count(),
+        // Statistik Mesin
+        'mesin_aktif'       => \App\Models\Mesin::where('status', 'active')->count(),
+        'mesin_maintenance' => \App\Models\Mesin::where('status', 'maintenance')->count(),
 
-            // Data untuk chart
-            'permintaan_by_status' => Permintaan::selectRaw('status, count(*) as total')
-                ->groupBy('status')
-                ->pluck('total', 'status')
-                ->toArray(),
+        // Statistik dari Master Schedule (Menggantikan model Schedule)
+        'proses_running' => \App\Models\Schedule::where('status', 'in_progress')->count(),
+        'schedule_today' => \App\Models\Schedule::whereDate('tanggal_mulai', today())->count(),
 
-            'permintaan_by_month' => Permintaan::selectRaw('DATE_FORMAT(tanggal_permintaan, "%Y-%m") as month, count(*) as total')
-                ->groupBy('month')
-                ->orderBy('month')
-                ->take(6)
-                ->pluck('total', 'month')
-                ->toArray(),
-        ];
+        // Data untuk Chart Pie (Status Permintaan)
+        'permintaan_by_status' => \App\Models\Permintaan::selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->toArray(),
 
-        return view('admin.dashboard', compact('data', 'user'));
-    }
+        // Data untuk Chart Bar (Tren Produksi Bulanan)
+        'permintaan_by_month' => \App\Models\Permintaan::selectRaw('DATE_FORMAT(tanggal_permintaan, "%Y-%m") as month, count(*) as total')
+            ->groupBy('month')
+            ->orderBy('month')
+            ->take(6)
+            ->pluck('total', 'month')
+            ->toArray(),
+    ];
 
+    return view('admin.dashboard', compact('data', 'user'));
+}
     /*
     |--------------------------------------------------------------------------
     | DASHBOARD OPERATOR
@@ -82,20 +86,26 @@ class DashboardController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function engineer()
-    {
-        $user = auth()->user();
+   public function engineer()
+{
+    $user = auth()->user();
 
-        $permintaan_baru = Permintaan::where('status', 'submitted')
-            ->with('user')
-            ->orderBy('tanggal_permintaan', 'desc')
-            ->take(10)
-            ->get();
+    
+    $permintaan_baru = Permintaan::where('status', 'submitted')
+        ->with('user')
+        ->latest()
+        ->take(5)
+        ->get();
 
-        $mesin_maintenance = Mesin::where('status', 'maintenance')->get();
-
-        return view('engineer.dashboard', compact('user', 'permintaan_baru', 'mesin_maintenance'));
-    }
+    
+    $schedules = Schedule::with(['mesin', 'part'])
+        ->orderBy('tanggal_plan', 'asc')
+        ->take(10)
+        ->get();
+    $mesin_maintenance = Mesin::where('status', 'maintenance')->get();
+    
+    return view('engineer.dashboard', compact('user', 'permintaan_baru', 'schedules', 'mesin_maintenance'));
+}
 
     /*
     |--------------------------------------------------------------------------
