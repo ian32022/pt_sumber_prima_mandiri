@@ -3,12 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\PermintaanController;
 use App\Http\Controllers\MesinController;
+use App\Http\Controllers\PlanningController;
+use App\Http\Controllers\MasterScheduleController;
 use App\Http\Controllers\PartListController;
+use App\Http\Controllers\PermintaanController;
 use App\Http\Controllers\ProsesMfgController;
 use App\Http\Controllers\ScheduleController;
-use App\Http\Controllers\PlanningController;
 
 // ─────────────────────────────────────────────
 // Authentication Routes
@@ -63,7 +64,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Schedule Overview
     Route::get('schedule', [ScheduleController::class, 'index'])->name('schedule.index');
-
+// Master Schedule
+Route::get('master',  [MasterScheduleController::class, 'index'])->name('master.index');
+Route::post('master', [MasterScheduleController::class, 'store'])->name('master.store');
+Route::patch('master/{id}/status', [MasterScheduleController::class, 'updateStatus'])->name('master.updateStatus');
+Route::put('master/{id}',    [MasterScheduleController::class, 'update'])->name('master.update');
+Route::delete('master/{id}', [MasterScheduleController::class, 'destroy'])->name('master.destroy');
     // User Management
     Route::get('users',         [App\Http\Controllers\UserController::class, 'index'])->name('users.index');
     Route::post('users',        [App\Http\Controllers\UserController::class, 'store'])->name('users.store');
@@ -151,3 +157,57 @@ Route::middleware('auth')->group(function () {
         return back()->with('success', 'Profile berhasil diperbarui.');
     })->name('profile.update');
 });
+
+// ── REQUEST MANAGEMENT (Permintaan) ──────────────────────────────────────
+Route::resource('permintaan', PermintaanController::class)
+    ->names('permintaan')
+    ->except(['edit', 'update']);
+
+Route::post('permintaan/{permintaan}/approve', [PermintaanController::class, 'approve'])
+    ->name('permintaan.approve');
+
+Route::post('permintaan/{permintaan}/reject', [PermintaanController::class, 'reject'])
+    ->name('permintaan.reject');
+
+Route::patch('permintaan/parts/{partListId}/status', [PermintaanController::class, 'updatePartStatus'])
+    ->name('permintaan.part.status');
+
+
+// ── PART LIST ─────────────────────────────────────────────────────────────
+Route::resource('part-list', PartListController::class)
+    ->names('part-list');
+
+Route::post('part-list/{partList}/assign-designer', [PartListController::class, 'assignDesigner'])
+    ->name('part-list.assign-designer');
+
+Route::patch('part-list/{partList}/status', [PartListController::class, 'updatePartStatus'])
+    ->name('part-list.status');
+
+
+// ── MESIN ─────────────────────────────────────────────────────────────────
+Route::resource('mesin', MesinController::class)
+    ->names('mesin')
+    ->except(['index', 'show', 'create']);
+
+Route::patch('mesin/{mesin}/status', [MesinController::class, 'updateStatus'])
+    ->name('mesin.status');
+
+
+// ── PRODUCTION PLANNING ───────────────────────────────────────────────────
+Route::get('planning', [PlanningController::class, 'index'])
+    ->name('planning.index');
+
+Route::get('planning/{id}', [PlanningController::class, 'show'])
+    ->name('planning.show');
+
+Route::post('planning', [PlanningController::class, 'store'])
+    ->name('planning.store');
+
+Route::put('planning/{id}', [PlanningController::class, 'update'])
+    ->name('planning.update');
+
+Route::delete('planning/{id}', [PlanningController::class, 'destroy'])
+    ->name('planning.destroy');
+
+
+

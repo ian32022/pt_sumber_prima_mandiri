@@ -1,5 +1,5 @@
 <div class="sidebar">
-
+//sidebar.blade.php
     <div class="sidebar-header">
         <div class="sidebar-logo">
             <img src="{{ asset('images/logo-pt-sumber-prima-mandiri.png') }}" alt="logo">
@@ -28,10 +28,10 @@
                class="{{ request()->routeIs('admin.planning.*') ? 'active' : '' }}">
                 <i class="bi bi-table"></i> Production Planning
             </a>
-            <a href="{{ route('admin.schedule.index') }}"
-               class="{{ request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
-                <i class="bi bi-tools"></i> Master Schedule
-            </a>
+            <a href="{{ route('admin.master.index') }}"
+   class="{{ request()->routeIs('admin.master.*') ? 'active' : '' }}">
+    <i class="bi bi-calendar3"></i> Master Schedule
+</a>
             <a href="{{ route('admin.users.index') }}"
                class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                 <i class="bi bi-person-check"></i> User Management

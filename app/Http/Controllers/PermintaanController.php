@@ -17,7 +17,7 @@ class PermintaanController extends Controller
     {
         $permintaan = Permintaan::with(['user', 'partLists'])
             ->orderBy('tanggal_permintaan', 'desc')
-            ->get();
+            ->paginate();
 
         return view('admin.request', compact('permintaan'));
     }
@@ -78,16 +78,28 @@ class PermintaanController extends Controller
     | APPROVE — Setujui permintaan
     |--------------------------------------------------------------------------
     */
-    public function approve(Permintaan $permintaan)
-    {
-        if (!in_array($permintaan->status, ['submitted', 'draft'])) {
-            return back()->with('error', 'Permintaan ini tidak bisa disetujui.');
-        }
-
-        $permintaan->update(['status' => 'approved']);
-
-        return back()->with('success', "Permintaan {$permintaan->nomor_permintaan} berhasil disetujui.");
+public function approve(Permintaan $permintaan)
+{
+    if (!in_array($permintaan->status, ['submitted', 'draft'])) {
+        return back()->with('error', 'Permintaan ini tidak bisa disetujui.');
     }
+
+    $permintaan->update(['status' => 'approved']);
+
+    // Otomatis buat mesin terkait permintaan ini
+    \App\Models\Mesin::firstOrCreate(
+        ['permintaan_id' => $permintaan->permintaan_id],
+        [
+            'kode_mesin'   => 'M-' . $permintaan->nomor_permintaan,
+            'nama_mesin'   => $permintaan->jenis_produk,
+            'jenis_proses' => 'umum',
+            'lokasi'       => '-',
+            'status'       => 'active',
+        ]
+    );
+
+    return back()->with('success', "Permintaan {$permintaan->nomor_permintaan} berhasil disetujui.");
+}
 
     /*
     |--------------------------------------------------------------------------

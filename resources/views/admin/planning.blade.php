@@ -1,10 +1,9 @@
 @extends('layouts.app')
 
-@section('title', isset($mesin) ? 'Planning - ' . $mesin->nama_mesin : 'Production Planning')
+@section('title', 'Production Planning')
 
-@section('styles')
+@push('styles')
 <style>
-    /* ===== SHARED ===== */
     .status-active-badge {
         background-color: #d1e7dd;
         color: #0f5132;
@@ -12,8 +11,6 @@
         padding: 3px 8px;
         border-radius: 4px;
     }
-
-    /* ===== INDEX: MACHINE CARDS ===== */
     .machine-card {
         background: #fff;
         border-radius: 12px;
@@ -37,6 +34,15 @@
         font-size: 0.7rem;
         padding: 3px 8px;
         border-radius: 4px;
+    }
+    .req-badge {
+        background-color: #fff3cd;
+        color: #856404;
+        font-size: 0.7rem;
+        padding: 3px 8px;
+        border-radius: 4px;
+        margin-top: 4px;
+        display: inline-block;
     }
     .stat-row {
         display: flex;
@@ -97,21 +103,8 @@
         border-color: #2563eb;
         background-color: #f0f8ff;
     }
-
-    /* ===== SHOW: ACTIVITY TABLE ===== */
-    .detail-card { background:#fff; border-radius:12px; border:1px solid #e0e0e0; padding:20px; margin-bottom:20px; }
-    .table-custom thead th { font-size:0.75rem; text-transform:uppercase; color:#888; letter-spacing:0.5px; border-bottom:1px solid #ededed; padding-bottom:12px; }
-    .table-custom tbody td { font-size:0.9rem; padding:14px 8px; vertical-align:middle; border-bottom:1px solid #f0f0f0; }
-    .text-done { color:#198754; font-weight:600; }
-    .text-act  { color:#fd7e14; font-weight:600; }
-    .text-plan { color:#0d6efd; font-weight:600; }
-    .action-icon { cursor:pointer; transition:transform 0.2s; margin-right:8px; font-size:1rem; }
-    .action-icon:hover { transform:scale(1.15); }
-    .icon-edit   { color:#0d6efd; }
-    .icon-delete { color:#dc3545; }
-    #add-activity-card { display:none; }
 </style>
-@endsection
+@endpush
 
 @section('content')
 
@@ -129,11 +122,6 @@
     </div>
 @endif
 
-{{-- ============================================================
-     INDEX VIEW — Daftar semua mesin
-     ============================================================ --}}
-@if(!isset($mesin))
-
 <div class="mb-4">
     <h3 class="fw-bold mb-1">Production Planning</h3>
     <p class="text-muted">Kelola jadwal activity berdasarkan mesin produksi</p>
@@ -144,13 +132,22 @@
     @forelse($mesins as $mesin)
     <div class="col-md-4">
         <a href="{{ route('admin.planning.show', $mesin->mesin_id) }}" class="machine-card">
-            <div class="d-flex justify-content-between align-items-start mb-2">
+            <div class="d-flex justify-content-between align-items-start mb-1">
                 <h6 class="fw-bold mb-0">{{ $mesin->nama_mesin }}</h6>
                 <span class="status-active-badge">{{ ucfirst($mesin->status) }}</span>
             </div>
-            <div class="d-flex justify-content-between align-items-center mb-4">
+
+            {{-- Badge permintaan terkait --}}
+            @if($mesin->permintaan)
+                <span class="req-badge">
+                    <i class="bi bi-link-45deg"></i>
+                    {{ $mesin->permintaan->nomor_permintaan }}
+                </span>
+            @endif
+
+            <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
                 <div>
-                    <div style="font-size:0.8rem;color:#666;">{{ $mesin->jenis_mesin ?? '-' }}</div>
+                    <div style="font-size:0.8rem;color:#666;">{{ $mesin->jenis_proses ?? '-' }}</div>
                     <div style="font-size:0.75rem;color:#999;">{{ $mesin->lokasi ?? '-' }}</div>
                 </div>
                 <span class="activity-badge">{{ $mesin->total_activity }} Activity</span>
@@ -170,6 +167,12 @@
         </a>
     </div>
     @empty
+    <div class="col-12">
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+            Belum ada mesin. Tambahkan mesin pertama.
+        </div>
+    </div>
     @endforelse
 
     {{-- Tombol Add New Machine --}}
@@ -234,7 +237,7 @@
                         <label class="form-label text-muted" style="font-size:0.85rem;">
                             Machine Type <span class="text-danger">*</span>
                         </label>
-                        <select name="jenis_mesin" class="form-select" required>
+                        <select name="jenis_proses" class="form-select" required>
                             <option value="" disabled selected>Select machine type</option>
                             <option value="CNC Milling">CNC Milling</option>
                             <option value="CNC Lathe">CNC Lathe</option>
@@ -245,6 +248,25 @@
                             <option value="Drilling">Drilling</option>
                             <option value="Lainnya">Lainnya</option>
                         </select>
+                    </div>
+
+                    {{-- ✅ BARU: Dropdown permintaan yang sudah approved --}}
+                    <div class="mb-3">
+                        <label class="form-label text-muted" style="font-size:0.85rem;">
+                            Terkait Permintaan
+                        </label>
+                        <select name="permintaan_id" class="form-select">
+                            <option value="">-- Tidak terkait permintaan --</option>
+                            @foreach(\App\Models\Permintaan::whereIn('status', ['approved', 'in_progress'])->orderBy('nomor_permintaan')->get() as $p)
+                                <option value="{{ $p->permintaan_id }}">
+                                    {{ $p->nomor_permintaan }} — {{ $p->jenis_produk }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="form-text" style="font-size:0.75rem;">
+                            Pilih jika mesin ini untuk mengerjakan permintaan tertentu.
+                            Hanya permintaan berstatus <strong>Approved</strong> yang tampil.
+                        </div>
                     </div>
 
                     <div class="mb-4">
@@ -282,213 +304,10 @@
     </div>
 </div>
 
-
-{{-- ============================================================
-     SHOW VIEW — Detail mesin & daftar activity
-     ============================================================ --}}
-@else
-
-{{-- Header --}}
-<div class="d-flex justify-content-between align-items-start mb-4">
-    <div class="d-flex align-items-start gap-3">
-        <a href="{{ route('admin.planning.index') }}" class="btn btn-light border mt-1 px-2 py-1">
-            <i class="bi bi-arrow-left"></i>
-        </a>
-        <div>
-            <div class="d-flex align-items-center gap-2 mb-1">
-                <h3 class="fw-bold mb-0">{{ $mesin->nama_mesin }}</h3>
-                <span class="status-active-badge">{{ ucfirst($mesin->status) }}</span>
-            </div>
-            <p class="text-muted mb-0">
-                {{ $mesin->jenis_mesin ?? '-' }} &bull; {{ $mesin->lokasi ?? '-' }}
-            </p>
-        </div>
-    </div>
-    <button class="btn btn-primary" onclick="toggleAddActivity()">
-        <i class="bi bi-plus-lg me-1"></i> Tambah Activity
-    </button>
-</div>
-
-{{-- Form Tambah Activity --}}
-<div class="detail-card" style="border-color:#2563eb;" id="add-activity-card">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="fw-bold mb-0">Tambah Activity Baru</h6>
-        <button type="button" class="btn-close" onclick="toggleAddActivity()"></button>
-    </div>
-    <form action="{{ route('admin.planning.store') }}" method="POST">
-        @csrf
-        <input type="hidden" name="mesin_id" value="{{ $mesin->mesin_id }}">
-        <div class="row g-3 mb-3">
-            <div class="col-12">
-                <label class="form-label text-muted" style="font-size:0.85rem;">
-                    Nama Activity <span class="text-danger">*</span>
-                </label>
-                <input type="text" name="nama_activity" class="form-control form-control-sm"
-                       placeholder="Contoh: Machining Part Conveyor" required>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label text-muted" style="font-size:0.85rem;">
-                    PIC (Person In Charge) <span class="text-danger">*</span>
-                </label>
-                <input type="text" name="pic" class="form-control form-control-sm"
-                       placeholder="Nama operator" required>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label text-muted" style="font-size:0.85rem;">
-                    Tanggal Plan <span class="text-danger">*</span>
-                </label>
-                <input type="date" name="tanggal_plan" class="form-control form-control-sm" required>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label text-muted" style="font-size:0.85rem;">
-                    Request ID (Opsional)
-                </label>
-                <input type="text" name="request_id" class="form-control form-control-sm"
-                       placeholder="REQ-2025-001">
-            </div>
-        </div>
-        <button type="submit" class="btn btn-primary btn-sm px-4">Simpan Activity</button>
-        <button type="button" class="btn btn-light btn-sm px-4 border"
-                onclick="toggleAddActivity()">Batal</button>
-    </form>
-</div>
-
-{{-- Tabel Activity --}}
-<div class="detail-card p-0" style="overflow:hidden;">
-    <div class="px-4 pt-4 pb-2">
-        <h6 class="fw-bold mb-0" style="font-size:0.9rem;">Daftar Activity</h6>
-    </div>
-    <table class="table table-custom mb-0" style="width:100%;">
-        <thead>
-            <tr>
-                <th class="ps-4">NO</th>
-                <th>NAMA ACTIVITY</th>
-                <th>PIC</th>
-                <th>TANGGAL PLAN</th>
-                <th>TANGGAL ACTUAL</th>
-                <th>REQUEST ID</th>
-                <th>STATUS</th>
-                <th>ACTIONS</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($activities as $act)
-            <tr>
-                <td class="ps-4 text-primary fw-bold">
-                    {{ str_pad($loop->iteration, 3, '0', STR_PAD_LEFT) }}
-                </td>
-                <td style="max-width:180px;">{{ $act->nama_proses }}</td>
-                <td>{{ $act->pic ?? '-' }}</td>
-                <td>{{ $act->tanggal_plan ? \Carbon\Carbon::parse($act->tanggal_plan)->format('d/m/Y') : '-' }}</td>
-                <td>{{ $act->tanggal_actual ? \Carbon\Carbon::parse($act->tanggal_actual)->format('d/m/Y') : '-' }}</td>
-                <td>{{ $act->request_id ?? '-' }}</td>
-                <td>
-                    @if($act->status === 'done')
-                        <span class="text-done">Done</span>
-                    @elseif($act->status === 'running')
-                        <span class="text-act">Act</span>
-                    @else
-                        <span class="text-plan">Plan</span>
-                    @endif
-                </td>
-                <td>
-                    <i class="bi bi-pencil action-icon icon-edit" title="Edit"
-                       onclick="openEditModal(
-                           {{ $act->proses_id }},
-                           '{{ addslashes($act->nama_proses) }}',
-                           '{{ addslashes($act->pic ?? '') }}',
-                           '{{ $act->tanggal_plan }}'
-                       )"></i>
-                    <i class="bi bi-trash action-icon icon-delete" title="Hapus"
-                       onclick="confirmDelete({{ $act->proses_id }})"></i>
-                </td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="8" class="text-center text-muted py-5">
-                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                    Belum ada activity. Klik <strong>Tambah Activity</strong> untuk memulai.
-                </td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
-
-{{-- Modal Edit --}}
-<div class="modal fade" id="editActivityModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius:12px; border:none;">
-            <div class="modal-header border-bottom-0">
-                <div>
-                    <h5 class="modal-title fw-bold">Edit Activity</h5>
-                    <p class="text-muted mb-0" style="font-size:0.85rem;">Update detail activity</p>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body pt-2">
-                <form id="editActivityForm" method="POST">
-                    @csrf
-                    @method('PUT')
-                    <div class="mb-3">
-                        <label class="form-label text-muted" style="font-size:0.85rem;">
-                            Nama Activity <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" name="nama_activity" id="edit-act-name" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-muted" style="font-size:0.85rem;">
-                            PIC <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" name="pic" id="edit-pic" class="form-control" required>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label text-muted" style="font-size:0.85rem;">
-                            Tanggal Plan <span class="text-danger">*</span>
-                        </label>
-                        <input type="date" name="tanggal_plan" id="edit-date" class="form-control" required>
-                    </div>
-                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
-                        <button type="button" class="btn btn-light px-4 border" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary px-4">Update</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- Modal Hapus --}}
-<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content border-0" style="border-radius:12px;">
-            <div class="modal-body text-center p-4">
-                <i class="bi bi-exclamation-triangle text-danger fs-1 mb-3 d-block"></i>
-                <h5 class="fw-bold">Hapus Activity?</h5>
-                <p class="text-muted mb-4" style="font-size:0.9rem;">
-                    Data yang dihapus tidak dapat dikembalikan.
-                </p>
-                <div class="d-flex justify-content-center gap-2">
-                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
-                    <form id="deleteActivityForm" method="POST">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger px-4">Hapus</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-@endif
-{{-- ===== END CONDITIONAL VIEW ===== --}}
-
 @endsection
 
 @push('scripts')
 <script>
-    {{-- ===== INDEX SCRIPTS ===== --}}
     function handleFileUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -498,27 +317,6 @@
         document.getElementById('upload-text').textContent = file.name;
         document.getElementById('upload-text').style.color = '#198754';
         document.getElementById('upload-subtext').textContent = fileSize + ' KB • ' + fileExt + ' — Siap diupload';
-    }
-
-    {{-- ===== SHOW SCRIPTS ===== --}}
-    function toggleAddActivity() {
-        const card = document.getElementById('add-activity-card');
-        if (!card) return;
-        card.style.display = (card.style.display === 'none' || card.style.display === '') ? 'block' : 'none';
-        if (card.style.display === 'block') card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    function openEditModal(id, name, pic, date) {
-        document.getElementById('edit-act-name').value = name;
-        document.getElementById('edit-pic').value       = pic;
-        document.getElementById('edit-date').value      = date;
-        document.getElementById('editActivityForm').action = '/admin/planning/' + id;
-        new bootstrap.Modal(document.getElementById('editActivityModal')).show();
-    }
-
-    function confirmDelete(id) {
-        document.getElementById('deleteActivityForm').action = '/admin/planning/' + id;
-        new bootstrap.Modal(document.getElementById('confirmDeleteModal')).show();
     }
 </script>
 @endpush

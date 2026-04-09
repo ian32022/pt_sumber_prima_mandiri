@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+//app.blade.php
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     {{-- ✅ Meta wajib --}}

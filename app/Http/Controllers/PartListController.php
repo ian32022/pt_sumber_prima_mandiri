@@ -12,12 +12,12 @@ class PartListController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
-    | INDEX — Tampilkan semua part list
+    | INDEX
     |--------------------------------------------------------------------------
     */
     public function index(Request $request)
     {
-        // ✅ Support AJAX untuk load part list per permintaan (dari planning.blade.php)
+        // AJAX: load part list per permintaan (dari request.blade.php)
         if ($request->ajax() && $request->has('permintaan_id')) {
             $parts = PartList::where('permintaan_id', $request->permintaan_id)->get();
             return response()->json($parts);
@@ -37,8 +37,7 @@ class PartListController extends Controller
             return view('engineer.parts', compact('parts', 'permintaan'));
         }
 
-        // ✅ FIX: tambah $mesins yang dibutuhkan admin.planning
-        $mesins  = Mesin::orderBy('nama_mesin')->get();
+        $mesins    = Mesin::orderBy('nama_mesin')->get();
         $designers = User::where('role', 'engineer')->orderBy('nama')->get();
 
         return view('admin.planning', compact('parts', 'permintaan', 'mesins', 'designers'));
@@ -46,23 +45,7 @@ class PartListController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | CREATE — Form tambah part (redirect ke index, pakai modal)
-    |--------------------------------------------------------------------------
-    */
-    public function create($permintaan_id = null)
-    {
-        $role = auth()->user()->role;
-
-        if ($role === 'engineer') {
-            return redirect()->route('engineer.parts.index');
-        }
-
-        return redirect()->route('admin.part-list.index');
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | STORE — Simpan part baru
+    | STORE
     |--------------------------------------------------------------------------
     */
     public function store(Request $request)
@@ -85,8 +68,8 @@ class PartListController extends Controller
             'status_part.required'   => 'Status wajib dipilih.',
         ]);
 
-        $data = $request->all();
-        $data['kode_part'] = PartList::generateKodePart($request->permintaan_id);
+        $data               = $request->all();
+        $data['kode_part']  = PartList::generateKodePart($request->permintaan_id);
 
         PartList::create($data);
 
@@ -97,18 +80,18 @@ class PartListController extends Controller
                 ->with('success', 'Part berhasil ditambahkan.');
         }
 
-        return redirect()->route('admin.part-list.index')
+        return redirect()->route('admin.permintaan.index')
             ->with('success', 'Part berhasil ditambahkan.');
     }
 
     /*
     |--------------------------------------------------------------------------
-    | SHOW — Detail part
+    | SHOW
     |--------------------------------------------------------------------------
     */
     public function show(PartList $partList)
     {
-        $partList->load(['permintaan', 'designer', 'prosesMfg', 'schedules']);
+        $partList->load(['permintaan', 'designer', 'prosesMfg']);
 
         $role = auth()->user()->role;
 
@@ -116,20 +99,12 @@ class PartListController extends Controller
             return view('engineer.parts-detail', compact('partList'));
         }
 
-        $permintaan = Permintaan::with('partLists')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        // ✅ FIX: tambah $mesins yang dibutuhkan admin.planning
-        $mesins    = Mesin::orderBy('nama_mesin')->get();
-        $designers = User::where('role', 'engineer')->orderBy('nama')->get();
-
-        return view('admin.planning', compact('partList', 'permintaan', 'mesins', 'designers'));
+        return redirect()->route('admin.permintaan.index');
     }
 
     /*
     |--------------------------------------------------------------------------
-    | EDIT — Form edit (kembalikan JSON untuk modal)
+    | EDIT — kembalikan JSON untuk modal
     |--------------------------------------------------------------------------
     */
     public function edit(PartList $partList)
@@ -138,18 +113,12 @@ class PartListController extends Controller
             return response()->json($partList);
         }
 
-        $role = auth()->user()->role;
-
-        if ($role === 'engineer') {
-            return redirect()->route('engineer.parts.index');
-        }
-
-        return redirect()->route('admin.part-list.index');
+        return redirect()->route('admin.permintaan.index');
     }
 
     /*
     |--------------------------------------------------------------------------
-    | UPDATE — Perbarui data part
+    | UPDATE
     |--------------------------------------------------------------------------
     */
     public function update(Request $request, PartList $partList)
@@ -164,11 +133,6 @@ class PartListController extends Controller
             'berat'           => 'nullable|numeric|min:0',
             'status_part'     => 'required|in:draft,belum_dibeli,dibeli,indent,ready',
             'designer_id'     => 'nullable|exists:users,user_id',
-        ], [
-            'nama_part.required'   => 'Nama part wajib diisi.',
-            'quantity.required'    => 'Quantity wajib diisi.',
-            'unit.required'        => 'Unit wajib diisi.',
-            'status_part.required' => 'Status wajib dipilih.',
         ]);
 
         $partList->update($request->all());
@@ -180,17 +144,23 @@ class PartListController extends Controller
                 ->with('success', 'Part berhasil diperbarui.');
         }
 
-        return redirect()->route('admin.part-list.index')
+        return redirect()->route('admin.permintaan.index')
             ->with('success', 'Part berhasil diperbarui.');
     }
 
     /*
     |--------------------------------------------------------------------------
-    | DESTROY — Hapus part
+    | DESTROY
     |--------------------------------------------------------------------------
     */
     public function destroy(PartList $partList)
     {
+        // Support AJAX delete (dari request.blade.php)
+        if (request()->ajax() || request()->wantsJson()) {
+            $partList->delete();
+            return response()->json(['success' => true]);
+        }
+
         $partList->delete();
 
         $role = auth()->user()->role;
@@ -200,22 +170,19 @@ class PartListController extends Controller
                 ->with('success', 'Part berhasil dihapus.');
         }
 
-        return redirect()->route('admin.part-list.index')
+        return redirect()->route('admin.permintaan.index')
             ->with('success', 'Part berhasil dihapus.');
     }
 
     /*
     |--------------------------------------------------------------------------
-    | ASSIGN DESIGNER — Tugaskan designer ke part
+    | ASSIGN DESIGNER
     |--------------------------------------------------------------------------
     */
     public function assignDesigner(Request $request, PartList $partList)
     {
         $request->validate([
             'designer_id' => 'required|exists:users,user_id',
-        ], [
-            'designer_id.required' => 'Designer wajib dipilih.',
-            'designer_id.exists'   => 'Designer tidak ditemukan.',
         ]);
 
         $partList->update([
@@ -228,20 +195,31 @@ class PartListController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | UPDATE STATUS — Perbarui status part
+    | UPDATE STATUS
     |--------------------------------------------------------------------------
     */
     public function updatePartStatus(Request $request, PartList $partList)
     {
         $request->validate([
             'status_part' => 'required|in:draft,belum_dibeli,dibeli,indent,ready',
-        ], [
-            'status_part.required' => 'Status wajib dipilih.',
-            'status_part.in'       => 'Status tidak valid.',
         ]);
 
         $partList->update(['status_part' => $request->status_part]);
 
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+
         return back()->with('success', 'Status part berhasil diperbarui.');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CREATE (redirect only)
+    |--------------------------------------------------------------------------
+    */
+    public function create($permintaan_id = null)
+    {
+        return redirect()->route('admin.permintaan.index');
     }
 }

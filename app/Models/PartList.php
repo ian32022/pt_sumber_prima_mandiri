@@ -1,5 +1,5 @@
 <?php
-
+//PartList
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,8 +9,8 @@ class PartList extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'partlist_id';
-    protected $table = 'part_list';
+    protected $table      = 'part_list';
+    protected $primaryKey = 'partlist_id'; // PK sesuai DB
 
     protected $fillable = [
         'permintaan_id',
@@ -25,64 +25,49 @@ class PartList extends Model
         'berat',
         'gambar_part',
         'status_part',
-        'catatan'
+        'catatan',
     ];
 
-    protected $casts = [
-        'quantity' => 'integer',
-        'berat' => 'decimal:2',
-    ];
+    /*
+    |--------------------------------------------------------------------------
+    | RELASI
+    |--------------------------------------------------------------------------
+    */
 
-    // Relationship dengan Permintaan
     public function permintaan()
     {
-        return $this->belongsTo(Permintaan::class, 'permintaan_id');
+        return $this->belongsTo(Permintaan::class, 'permintaan_id', 'permintaan_id');
     }
 
-    // Relationship dengan Designer
     public function designer()
     {
-        return $this->belongsTo(User::class, 'designer_id');
+        return $this->belongsTo(User::class, 'designer_id', 'user_id');
     }
 
-    // Relationship dengan ProsesMfg
     public function prosesMfg()
     {
-        return $this->hasMany(ProsesMfg::class, 'partlist_id');
+        // FK di proses_mfg = partlist_id, PK di part_list = partlist_id
+        return $this->hasMany(ProsesMfg::class, 'partlist_id', 'partlist_id');
     }
 
-    // Relationship dengan Schedule
-    public function schedules()
-    {
-        return $this->hasMany(Schedule::class, 'partlist_id');
-    }
+    /*
+    |--------------------------------------------------------------------------
+    | HELPER
+    |--------------------------------------------------------------------------
+    */
 
-    // Status part options
-    public static function getStatusOptions()
+    public static function generateKodePart(int $permintaanId): string
     {
-        return [
-            'draft' => 'Draft',
-            'belum_dibeli' => 'Belum Dibeli',
-            'dibeli' => 'Sudah Dibeli',
-            'indent' => 'Indent',
-            'ready' => 'Ready'
-        ];
-    }
+        $pkColumn = (new static())->getKeyName(); // 'partlist_id'
 
-    // Check if part is ready for machining
-    public function isReadyForMachining()
-    {
-        return $this->status_part === 'ready';
-    }
+        $lastPart = static::where('permintaan_id', $permintaanId)
+            ->orderBy($pkColumn, 'desc')
+            ->first();
 
-    // Generate kode part otomatis
-    public static function generateKodePart($permintaanId)
-    {
-        $permintaan = Permintaan::find($permintaanId);
-        $prefix = 'PART-' . date('ym') . '-';
-        
-        $count = self::where('permintaan_id', $permintaanId)->count();
-        
-        return $prefix . str_pad($count + 1, 3, '0', STR_PAD_LEFT);
+        $urutan = $lastPart
+            ? ((int) substr($lastPart->kode_part, -3)) + 1
+            : 1;
+
+        return 'PRT-' . $permintaanId . '-' . str_pad($urutan, 3, '0', STR_PAD_LEFT);
     }
 }

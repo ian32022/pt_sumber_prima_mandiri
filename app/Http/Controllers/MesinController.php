@@ -3,76 +3,83 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mesin;
+use App\Models\Permintaan;
 use Illuminate\Http\Request;
 
 class MesinController extends Controller
 {
     public function index()
     {
-        $mesins = Mesin::orderBy('kode_mesin')->get();
-        return view('admin.mesin', compact('mesins'));
+        return redirect()->route('admin.planning.index');
     }
 
     public function create()
     {
-        // ✅ Tidak perlu view terpisah, pakai modal di admin.mesin
-        return redirect()->route('admin.mesin.index');
+        return redirect()->route('admin.planning.index');
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | STORE — Simpan mesin baru, bisa terkait permintaan tertentu
+    |--------------------------------------------------------------------------
+    */
     public function store(Request $request)
     {
         $request->validate([
-            'kode_mesin'   => 'required|unique:mesin,kode_mesin',
-            'nama_mesin'   => 'required|string|max:100',
-            'jenis_proses' => 'required|string|max:100',
-            'status'       => 'required|in:active,maintenance,inactive',
-            'kapasitas'    => 'nullable|numeric|min:0',
-            'lokasi'       => 'required|string|max:100',
+            'kode_mesin'    => 'required|unique:mesin,kode_mesin',
+            'nama_mesin'    => 'required|string|max:100',
+            'jenis_proses'  => 'required|string|max:100',
+            'lokasi'        => 'required|string|max:100',
+            'permintaan_id' => 'nullable|exists:permintaan,permintaan_id',
         ], [
-            'kode_mesin.required'   => 'Kode mesin wajib diisi.',
-            'kode_mesin.unique'     => 'Kode mesin sudah digunakan.',
-            'nama_mesin.required'   => 'Nama mesin wajib diisi.',
-            'jenis_proses.required' => 'Jenis proses wajib diisi.',
-            'status.required'       => 'Status wajib dipilih.',
-            'lokasi.required'       => 'Lokasi wajib diisi.',
+            'kode_mesin.unique' => 'Kode mesin sudah digunakan.',
+            'kode_mesin.required' => 'Kode mesin wajib diisi.',
+            'nama_mesin.required' => 'Nama mesin wajib diisi.',
+            'jenis_proses.required' => 'Jenis proses wajib dipilih.',
+            'lokasi.required' => 'Lokasi wajib diisi.',
         ]);
 
-        Mesin::create($request->all());
+        Mesin::create([
+            'kode_mesin'    => $request->kode_mesin,
+            'nama_mesin'    => $request->nama_mesin,
+            'jenis_proses'  => $request->jenis_proses,
+            'lokasi'        => $request->lokasi,
+            'status'        => 'active',
+            'permintaan_id' => $request->permintaan_id ?? null,
+        ]);
 
-        // ✅ Fix: route name disesuaikan
-        return redirect()->route('admin.mesin.index')
+        return redirect()->route('admin.planning.index')
             ->with('success', 'Mesin berhasil ditambahkan.');
     }
 
     public function edit(Mesin $mesin)
     {
-        // ✅ Kembalikan JSON untuk modal edit
         if (request()->ajax()) {
             return response()->json($mesin);
         }
-        return redirect()->route('admin.mesin.index');
+        return redirect()->route('admin.planning.index');
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | UPDATE — Perbarui data mesin
+    |--------------------------------------------------------------------------
+    */
     public function update(Request $request, Mesin $mesin)
     {
         $request->validate([
-            'kode_mesin'   => 'required|unique:mesin,kode_mesin,' . $mesin->mesin_id . ',mesin_id',
-            'nama_mesin'   => 'required|string|max:100',
-            'jenis_proses' => 'required|string|max:100',
-            'status'       => 'required|in:active,maintenance,inactive',
-            'kapasitas'    => 'nullable|numeric|min:0',
-            'lokasi'       => 'required|string|max:100',
-        ], [
-            'kode_mesin.required' => 'Kode mesin wajib diisi.',
-            'kode_mesin.unique'   => 'Kode mesin sudah digunakan.',
-            'nama_mesin.required' => 'Nama mesin wajib diisi.',
-            'lokasi.required'     => 'Lokasi wajib diisi.',
+            'kode_mesin'    => 'required|unique:mesin,kode_mesin,' . $mesin->mesin_id . ',mesin_id',
+            'nama_mesin'    => 'required|string|max:100',
+            'jenis_proses'  => 'required|string|max:100',
+            'status'        => 'required|in:active,maintenance,inactive',
+            'kapasitas'     => 'nullable|numeric|min:0',
+            'lokasi'        => 'required|string|max:100',
+            'permintaan_id' => 'nullable|exists:permintaan,permintaan_id',
         ]);
 
         $mesin->update($request->all());
 
-        // ✅ Fix: route name disesuaikan
-        return redirect()->route('admin.mesin.index')
+        return redirect()->route('admin.planning.index')
             ->with('success', 'Mesin berhasil diperbarui.');
     }
 
@@ -80,8 +87,7 @@ class MesinController extends Controller
     {
         $mesin->delete();
 
-        // ✅ Fix: route name disesuaikan
-        return redirect()->route('admin.mesin.index')
+        return redirect()->route('admin.planning.index')
             ->with('success', 'Mesin berhasil dihapus.');
     }
 
