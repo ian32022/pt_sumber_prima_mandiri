@@ -37,8 +37,8 @@ public function admin()
 
         // Statistik dari Master Schedule (Menggantikan model Schedule)
         'proses_running' => \App\Models\Schedule::where('status', 'in_progress')->count(),
-        'schedule_today' => \App\Models\Schedule::whereDate('tanggal_mulai', today())->count(),
-
+        'schedule_today' => \App\Models\Schedule::whereDate('tanggal_plan', today())->count(),
+         'schedule_activetoday' => \App\Models\Schedule::whereDate('tanggal_act', '>', today())->count(),
         // Data untuk Chart Pie (Status Permintaan)
         'permintaan_by_status' => \App\Models\Permintaan::selectRaw('status, count(*) as total')
             ->groupBy('status')

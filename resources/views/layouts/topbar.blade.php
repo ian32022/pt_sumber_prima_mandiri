@@ -23,13 +23,13 @@
             </div>
         </div>
 
-        {{-- LOGOUT: gunakan form POST + @csrf --}}
+        {{-- LOGOUT: gunakan form POST + @csrf 
         <form action="{{ route('logout') }}" method="POST" style="margin:0;">
             @csrf
             <button type="submit" class="logout-btn">
                 <i class="bi bi-box-arrow-right"></i>
                 Logout
-            </button>
+            </button>--}}
         </form>
 
     </div>

@@ -19,7 +19,7 @@
                class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <i class="bi bi-grid"></i> Dashboard
             </a>
-            <a href="{{ route('admin.permintaan.index') }}"
+            {{-- <a href="{{ route('admin.permintaan.index') }}"
                class="{{ request()->routeIs('admin.permintaan.*') ? 'active' : '' }}">
                 <i class="bi bi-file-text"></i> Request Management
             </a>
@@ -34,7 +34,7 @@
             <a href="{{ route('admin.users.index') }}"
                class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                 <i class="bi bi-person-check"></i> User Management
-            </a>
+            </a>--}}
 
         {{-- ── MENU ENGINEER ── --}}
         @elseif($role === 'engineer')
